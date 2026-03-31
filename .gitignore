@@ -152,6 +152,7 @@ cython_debug/
 Thumbs.db
 
 # Generated output files (pipeline)
-matriu_*.csv
-matrius_cobertura_excel_*.xlsx
+output/
+matrix_*.csv
+coverage_matrix_*.xlsx
 sortida_instancies_completa/

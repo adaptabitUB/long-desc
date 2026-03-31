@@ -39,11 +39,10 @@ uv run python -m src.long_descriptions.main
 ```
 
 L'ordre d'execució és:
-1. **genera_matriu_cobertura** - Generates coverage matrix with chart types
-2. **genera_instancies_canoniques** - Generates canonical instances  
-3. **genera_resum_estadistic** - Generates statistical summary
-4. **genera_macro_vba_resum_estadistic** - Generates VBA macro for statistical summary
-5. **genera_metriques** - Generates metrics
+1. **generate_coverage_matrix** - Generates coverage matrix with chart types
+2. **generate_charts** - Generates canonical instances  
+3. **generate_statistics_summary** - Generates statistical summary
+4. **generate_macro_vba_statistics_summary** - Generates VBA macro for statistical summary
 
 ### Scripts individuals
 
@@ -51,19 +50,17 @@ Executar scripts individualment:
 
 ```bash
 # Matriu de cobertura (customizable sizes)
-uv run python src/long_descriptions/genera_matriu_cobertura.py
+uv run python src/long_descriptions/generate_coverage_matrix.py
 
 # Instàncies canòniques
-uv run python src/long_descriptions/genera_instancies_canoniques.py
+uv run python src/long_descriptions/generate_charts.py
 
 # Resum estadístic
-uv run python src/long_descriptions/genera_resum_estadistic.py
+uv run python src/long_descriptions/generate_statistics_summary.py
 
 # Macro VBA
-uv run python src/long_descriptions/genera_macro_vba_resum_estadistic.py
+uv run python src/long_descriptions/generate_macro_vba_statistics_summary.py
 
-# Mètriques
-uv run python src/long_descriptions/genera_metriques.py
 ```
 
 ### Neteja de fitxers generats
@@ -98,12 +95,11 @@ uv run ruff format .
 │   └── long_descriptions/
 │       ├── __init__.py
 │       ├── main.py                              # Orquestrador del pipeline
-│       ├── genera_matriu_cobertura.py           # Pas 1: Genera matrius CSV/Excel
-│       ├── genera_instancies_canoniques.py      # Pas 2: Genera instàncies canòniques
-│       ├── genera_resum_estadistic.py           # Pas 3: Genera resums estadístics
-│       ├── genera_macro_vba_resum_estadistic.py # Pas 4: Genera macro VBA
-│       ├── genera_metriques.py                  # Pas 5: Genera mètriques (desactivat)
-│       └── genera_grafics_comparatius_metriques.py
+│       ├── generate_coverage_matrix.py          # Pas 1: Genera matrius CSV/Excel
+│       ├── generate_charts.py                   # Pas 2: Genera instàncies canòniques
+│       ├── generate_statistics_summary.py       # Pas 3: Genera resums estadístics
+│       ├── generate_macro_vba_statistics_summary.py # Pas 4: Genera macro VBA
+│       └── ...
 ├── tests/
 │   ├── __init__.py
 │   └── test_main.py
@@ -113,13 +109,15 @@ uv run ruff format .
 ├── pyproject.toml
 ├── .python-version
 ├── README.md
-├── matriu_500.csv                 # Fitxers generats (exemples)
-├── matriu_5000.csv
-└── sortida_instancies_completa/   # Directori de sortida principal
-    ├── instancies_canoniques.json
-    ├── instancies_canoniques.xlsx
+└── output/                        # Tota la sortida generada
+    ├── coverage_matrix_5000_500.xlsx
+    ├── matrix_5000.csv
+    ├── matrix_500.csv
+    ├── charts.json
+    ├── charts.xlsx
     ├── manifest.json
-    ├── resum_estadistic_instancies.json
-    ├── resum_estadistic_*.csv     # Un per cada família de gràfics
-    └── ResumEstadisticMacro.bas
+    ├── statistics_summary.json
+    ├── statistics_summary_*.csv
+    ├── StatisticsSummaryMacro.bas
+    └── metriques/
 ```

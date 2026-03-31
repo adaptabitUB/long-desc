@@ -11,23 +11,23 @@ from typing import Any, Dict, List, Tuple
 import pandas as pd
 import xlsxwriter
 
-INPUT_CSV = Path('./matriu_500.csv')
-OUT_DIR = Path('./sortida_instancies_completa')
-OUT_DIR.mkdir(parents=True, exist_ok=True)
-OUT_JSON = OUT_DIR / 'instancies_canoniques.json'
-OUT_XLSX = OUT_DIR / 'instancies_canoniques.xlsx'
-OUT_MANIFEST = OUT_DIR / 'manifest.json'
+OUTPUT_ROOT = Path("output")
+INPUT_CSV = OUTPUT_ROOT / "matrix_500.csv"
+OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+OUT_JSON = OUTPUT_ROOT / 'charts.json'
+OUT_XLSX = OUTPUT_ROOT / 'charts.xlsx'
+OUT_MANIFEST = OUTPUT_ROOT / 'manifest.json'
 
 STYLE_REF = {
     'id': 'office-custom-theme-pendent-v1',
     'href': './styles/office-custom-theme-pendent-v1.json',
-    'description': 'Referència pendent a la definició d’estil corporatiu.'
+    'description': 'Reference pending the final corporate style definition.'
 }
 
-MONTHS = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des']
-QUARTERS = ['T1', 'T2', 'T3', 'T4']
+MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
 YEARS = [str(y) for y in range(1995, 2026)]
-REGIONS_CAT = ['Alt Pirineu', 'Ponent', 'Camp de Tarragona', 'Barcelona Metropolitana', 'Girona', 'Terres de l\'Ebre']
+REGIONS_CAT = ['High Pyrenees', 'Western Plains', 'Tarragona Camp', 'Metropolitan Barcelona', 'Girona', 'Ebro Lands']
 
 # Accessible visual constants prepared for future pattern-based rendering.
 ACCESSIBLE_COLOR_PALETTE: List[str] = [
@@ -42,14 +42,14 @@ ACCESSIBLE_COLOR_PALETTE: List[str] = [
 ]
 
 ACCESSIBLE_PATTERN_PALETTE: List[Dict[str, str]] = [
-    {'id': 'P1', 'name': 'diagonal-right', 'token': 'slash', 'description': 'Ratlles diagonals cap a la dreta'},
-    {'id': 'P2', 'name': 'diagonal-left', 'token': 'backslash', 'description': 'Ratlles diagonals cap a l\'esquerra'},
-    {'id': 'P3', 'name': 'vertical', 'token': 'vertical', 'description': 'Línies verticals'},
-    {'id': 'P4', 'name': 'horizontal', 'token': 'horizontal', 'description': 'Línies horitzontals'},
-    {'id': 'P5', 'name': 'dots', 'token': 'dots', 'description': 'Punts separats'},
-    {'id': 'P6', 'name': 'cross', 'token': 'cross', 'description': 'Creu simple'},
-    {'id': 'P7', 'name': 'diag-cross', 'token': 'diag-cross', 'description': 'Creu diagonal'},
-    {'id': 'P8', 'name': 'grid', 'token': 'grid', 'description': 'Quadriculat'},
+    {'id': 'P1', 'name': 'diagonal-right', 'token': 'slash', 'description': 'Right-leaning diagonal lines'},
+    {'id': 'P2', 'name': 'diagonal-left', 'token': 'backslash', 'description': 'Left-leaning diagonal lines'},
+    {'id': 'P3', 'name': 'vertical', 'token': 'vertical', 'description': 'Vertical lines'},
+    {'id': 'P4', 'name': 'horizontal', 'token': 'horizontal', 'description': 'Horizontal lines'},
+    {'id': 'P5', 'name': 'dots', 'token': 'dots', 'description': 'Separated dots'},
+    {'id': 'P6', 'name': 'cross', 'token': 'cross', 'description': 'Simple cross'},
+    {'id': 'P7', 'name': 'diag-cross', 'token': 'diag-cross', 'description': 'Diagonal cross'},
+    {'id': 'P8', 'name': 'grid', 'token': 'grid', 'description': 'Grid pattern'},
 ]
 
 ACCESSIBLE_SERIES_STYLE_TABLE: List[Dict[str, str]] = [
@@ -103,447 +103,448 @@ ACCESSIBLE_PATTERN_TOKEN_TO_XLSXWRITER: Dict[str, str] = {
 ENABLE_CHART_PATTERNS = False
 
 DOMAIN_CFG: Dict[str, Dict[str, Any]] = {
-    'clima': {
+    'climate': {
         'unit_abs': 'ktCO₂e',
-        'unit_pct': '% de contribució',
-        'simple_categories': ['Transport', 'Edificis', 'Indústria', 'Residus', 'Agricultura', 'Energia', 'Aviació', 'Ramaderia', 'Usos del sòl', 'Forestació', 'Processos industrials', 'Pesca'],
+        'unit_pct': '% contribution',
+        'simple_categories': ['Transport', 'Buildings', 'Industry', 'Waste', 'Agriculture', 'Energy', 'Aviation', 'Livestock', 'Land use', 'Forestation', 'Industrial processes', 'Fisheries'],
         'long_categories': [
-            'Transport urbà i interurbà de passatgers',
-            'Parc d\'edificis residencials antics',
-            'Polígons industrials de consum intensiu',
-            'Gestió de residus municipals barrejats',
-            'Activitat agroalimentària de proximitat',
-            'Flota de vehicles pesants de mercaderies',
-            'Climatització d\'espais terciaris i comercials',
-            'Generació elèctrica amb combustibles fòssils',
-            'Ramaderia extensiva i producció de purins',
-            'Extracció i usos industrials de l\'aigua'
+            'Urban and interurban passenger transport',
+            'Aging residential building stock',
+            'High-consumption industrial estates',
+            'Mixed municipal waste management',
+            'Local agri-food activity',
+            'Heavy freight vehicle fleet',
+            'Heating and cooling in tertiary and retail spaces',
+            'Fossil-fuel-based electricity generation',
+            'Extensive livestock farming and slurry production',
+            'Water extraction and industrial water use'
         ],
-        'geo_categories': ['Pirineu', 'Pla de Lleida', 'Camp de Tarragona', 'AMB', 'Comarques Gironines', 'Terres de l\'Ebre', 'Catalunya Central', 'Alt Empordà'],
-        'series': ['CO₂', 'Metà', 'Òxid nitrós'],
-        'radar_axes': ['Mitigació', 'Adaptació', 'Exposició', 'Resiliència', 'Eficiència', 'Seguiment', 'Governança', 'Impacte social'],
-        'scatter_x': ('Temperatura mitjana (°C)', 10, 28),
-        'scatter_y': ('Emissions per càpita (tCO₂e)', 2, 14),
-        'map_metric': 'Emissions per càpita (tCO₂e)',
-        'combo_primary': 'Emissions mensuals (ktCO₂e)',
-        'combo_secondary': 'Anomalia de temperatura (°C)',
-        'stock_label': 'Preu del futur d\'electricitat (€/MWh)'
+        'geo_categories': ['Pyrenees', 'Lleida Plain', 'Tarragona Camp', 'Barcelona Metropolitan Area', 'Girona Counties', 'Ebro Lands', 'Central Catalonia', 'Alt Emporda'],
+        'series': ['CO₂', 'Methane', 'Nitrous oxide'],
+        'radar_axes': ['Mitigation', 'Adaptation', 'Exposure', 'Resilience', 'Efficiency', 'Monitoring', 'Governance', 'Social impact'],
+        'scatter_x': ('Average temperature (°C)', 10, 28),
+        'scatter_y': ('Per-capita emissions (tCO₂e)', 2, 14),
+        'map_metric': 'Per-capita emissions (tCO₂e)',
+        'combo_primary': 'Monthly emissions (ktCO₂e)',
+        'combo_secondary': 'Temperature anomaly (°C)',
+        'stock_label': 'Electricity futures price (€/MWh)'
     },
-    'demografia': {
-        'unit_abs': 'milers de persones',
-        'unit_pct': '% del total',
-        'simple_categories': ['Infància', 'Joventut', 'Adults', 'Sèniors', 'Dependència', 'Migració', 'Habitatge', 'Emancipació', 'Diversitat', 'Nova ciutadania', 'Famílies', 'Soledat'],
+    'demographics': {
+        'unit_abs': 'thousands of people',
+        'unit_pct': '% of total',
+        'simple_categories': ['Children', 'Youth', 'Adults', 'Seniors', 'Dependency', 'Migration', 'Housing', 'Independent living', 'Diversity', 'New citizens', 'Families', 'Loneliness'],
         'long_categories': [
-            'Població de 0 a 14 anys',
-            'Població de 15 a 29 anys',
-            'Població de 30 a 44 anys',
-            'Població de 45 a 64 anys',
-            'Població de 65 anys o més',
-            'Persones nascudes fora de la Unió Europea',
-            'Llars unipersonals en entorn urbà consolidat',
-            'Joves en procés d\'emancipació tardana',
-            'Persones amb diversitat funcional reconeguda',
-            'Fills en unitats familiars monoparentals'
+            'Population aged 0 to 14',
+            'Population aged 15 to 29',
+            'Population aged 30 to 44',
+            'Population aged 45 to 64',
+            'Population aged 65 or older',
+            'People born outside the European Union',
+            'Single-person households in consolidated urban areas',
+            'Young adults in delayed emancipation',
+            'People with recognized disabilities',
+            'Children in single-parent households'
         ],
-        'geo_categories': ['Vall d\'Aran', 'Ponent', 'Comarques Centrals', 'Barcelona', 'Camp de Tarragona', 'Girona', 'Terres de l\'Ebre', 'Pirineu'],
-        'series': ['Homes', 'Dones', 'No especificat'],
-        'radar_axes': ['Creixement', 'Envelliment', 'Densitat', 'Mobilitat', 'Natalitat', 'Atracció', 'Equilibri territorial', 'Relleu generacional'],
-        'scatter_x': ('Densitat (hab/km²)', 30, 600),
-        'scatter_y': ('Creixement anual (%)', -1.0, 3.0),
-        'map_metric': 'Densitat de població (hab/km²)',
-        'combo_primary': 'Naixements mensuals',
-        'combo_secondary': 'Saldo migratori (%)',
-        'stock_label': 'Índex de preu de l’habitatge'
+        'geo_categories': ['Aran Valley', 'Western Plains', 'Central Counties', 'Barcelona', 'Tarragona Camp', 'Girona', 'Ebro Lands', 'Pyrenees'],
+        'series': ['Men', 'Women', 'Unspecified'],
+        'radar_axes': ['Growth', 'Aging', 'Density', 'Mobility', 'Birth rate', 'Attractiveness', 'Territorial balance', 'Generational renewal'],
+        'scatter_x': ('Density (inhabitants/km²)', 30, 600),
+        'scatter_y': ('Annual growth (%)', -1.0, 3.0),
+        'map_metric': 'Population density (inhabitants/km²)',
+        'combo_primary': 'Monthly births',
+        'combo_secondary': 'Migration balance (%)',
+        'stock_label': 'Housing price index'
     },
-    'educació': {
-        'unit_abs': 'milers d\'alumnes',
-        'unit_pct': '% d\'alumnat',
-        'simple_categories': ['Primària', 'ESO', 'Batxillerat', 'FP', 'Universitat', 'Infantil', 'FP grau superior', 'Doctorat', 'Adults', 'Educació especial', 'Idiomes', 'Informàtica bàsica'],
+    'education': {
+        'unit_abs': 'thousands of students',
+        'unit_pct': '% of students',
+        'simple_categories': ['Primary', 'Lower secondary', 'Upper secondary', 'Vocational training', 'University', 'Early childhood', 'Higher vocational training', 'Doctorate', 'Adults', 'Special education', 'Languages', 'Basic computing'],
         'long_categories': [
-            'Alumnat de primària en centres públics',
-            'Alumnat d\'ESO en entorns vulnerables',
-            'Alumnat de batxillerat científic-tecnològic',
-            'Alumnat de formació professional dual',
-            'Alumnat universitari de primer curs',
-            'Menors matriculats a escoletes de 0-3 anys',
-            'Alumnat de cicles formatius de grau superior',
-            'Doctorands en universitats públiques catalanes',
-            'Persones adultes en programes de requalificació',
-            'Alumnat amb necessitats educatives específiques'
+            'Primary students in public schools',
+            'Lower-secondary students in vulnerable settings',
+            'Science and technology upper-secondary students',
+            'Students in dual vocational training',
+            'First-year university students',
+            'Children enrolled in 0-3 early-childhood centers',
+            'Students in higher vocational cycles',
+            'Doctoral students in Catalan public universities',
+            'Adults in reskilling programs',
+            'Students with specific educational needs'
         ],
-        'geo_categories': ['Girona', 'Barcelona', 'Lleida', 'Tarragona', 'Terres de l\'Ebre', 'Pirineu', 'Alt Pirineu', 'Comarques Centrals'],
-        'series': ['Públic', 'Concertat', 'Privat'],
-        'radar_axes': ['Matemàtiques', 'Lectura', 'Ciències', 'Digital', 'Idiomes', 'Participació', 'Equitat', 'Continuïtat acadèmica'],
-        'scatter_x': ('Ràtio alumnes/docent', 8, 32),
-        'scatter_y': ('Puntuació mitjana', 50, 95),
-        'map_metric': 'Abandonament escolar (%)',
-        'combo_primary': 'Matrícules mensuals',
-        'combo_secondary': 'Ràtio de cobertura (%)',
-        'stock_label': 'Índex de cost educatiu'
+        'geo_categories': ['Girona', 'Barcelona', 'Lleida', 'Tarragona', 'Ebro Lands', 'Pyrenees', 'High Pyrenees', 'Central Counties'],
+        'series': ['Public', 'State-funded private', 'Private'],
+        'radar_axes': ['Mathematics', 'Reading', 'Science', 'Digital skills', 'Languages', 'Participation', 'Equity', 'Academic continuity'],
+        'scatter_x': ('Student-to-teacher ratio', 8, 32),
+        'scatter_y': ('Average score', 50, 95),
+        'map_metric': 'Early school leaving (%)',
+        'combo_primary': 'Monthly enrollments',
+        'combo_secondary': 'Coverage ratio (%)',
+        'stock_label': 'Education cost index'
     },
-    'energia': {
+    'energy': {
         'unit_abs': 'GWh',
-        'unit_pct': '% de generació',
-        'simple_categories': ['Nuclear', 'Hidràulica', 'Eòlica', 'Solar', 'Gas', 'Biomassa', 'Marina', 'Geotèrmica', 'Cogeneració', 'Residus', 'Hidrogen', 'Xarxa intel·ligent'],
+        'unit_pct': '% of generation',
+        'simple_categories': ['Nuclear', 'Hydropower', 'Wind', 'Solar', 'Gas', 'Biomass', 'Marine', 'Geothermal', 'Cogeneration', 'Waste', 'Hydrogen', 'Smart grid'],
         'long_categories': [
-            'Central nuclear d\'Ascó',
-            'Embassaments de regulació anual',
-            'Parcs eòlics de la Terra Alta',
-            'Instal·lacions fotovoltaiques del Segrià',
-            'Cicles combinats de suport',
-            'Plantes de biogàs agroindustrial',
-            'Plataformes d\'energia marina experimental',
-            'Bombes de calor geotèrmiques profundes',
-            'Unitats de cogeneració industrial eficient',
-            'Valorització energètica de residus sòlids urbans'
+            'Asco nuclear power station',
+            'Annual regulation reservoirs',
+            'Terra Alta wind farms',
+            'Segria photovoltaic facilities',
+            'Support combined-cycle plants',
+            'Agro-industrial biogas plants',
+            'Experimental marine energy platforms',
+            'Deep geothermal heat pumps',
+            'Efficient industrial cogeneration units',
+            'Energy recovery from municipal solid waste'
         ],
-        'geo_categories': ['Pirineu', 'Ponents', 'Camp de Tarragona', 'Àrea Metropolitana', 'Catalunya Central', 'Ebre', 'Alt Pirineu', 'Comarques Gironines'],
-        'series': ['Base', 'Renovable', 'Suport'],
-        'radar_axes': ['Disponibilitat', 'Cost', 'Emissions', 'Flexibilitat', 'Risc', 'Cobertura', 'Autonomia', 'Estabilitat de xarxa'],
-        'scatter_x': ('Potència instal·lada (MW)', 20, 1200),
-        'scatter_y': ('Producció anual (GWh)', 10, 6500),
-        'map_metric': 'Generació renovable per habitant (MWh)',
-        'combo_primary': 'Generació mensual (GWh)',
-        'combo_secondary': 'Preu pool (€/MWh)',
-        'stock_label': 'Preu del futur del gas (€/MWh)'
+        'geo_categories': ['Pyrenees', 'Western districts', 'Tarragona Camp', 'Metropolitan Area', 'Central Catalonia', 'Ebro', 'High Pyrenees', 'Girona Counties'],
+        'series': ['Baseload', 'Renewable', 'Support'],
+        'radar_axes': ['Availability', 'Cost', 'Emissions', 'Flexibility', 'Risk', 'Coverage', 'Autonomy', 'Grid stability'],
+        'scatter_x': ('Installed capacity (MW)', 20, 1200),
+        'scatter_y': ('Annual production (GWh)', 10, 6500),
+        'map_metric': 'Renewable generation per resident (MWh)',
+        'combo_primary': 'Monthly generation (GWh)',
+        'combo_secondary': 'Pool price (€/MWh)',
+        'stock_label': 'Gas futures price (€/MWh)'
     },
-    'finances': {
+    'finance': {
         'unit_abs': 'M€',
-        'unit_pct': '% del total',
-        'simple_categories': ['Ingressos', 'Costos', 'Marge', 'Capex', 'Deute', 'Dividends', 'Taxes', 'Reserves', 'Amortitzacions', 'Circulant', 'Tresoreria', 'Patrimoni'],
+        'unit_pct': '% of total',
+        'simple_categories': ['Revenue', 'Costs', 'Margin', 'Capex', 'Debt', 'Dividends', 'Taxes', 'Reserves', 'Depreciation', 'Working capital', 'Cash', 'Equity'],
         'long_categories': [
-            'Ingressos recurrents de subscripció',
-            'Cost comercial i captació',
-            'Marge operatiu abans d\'amortitzacions',
-            'Inversió en plataforma tecnològica',
-            'Deute financer net ajustat',
-            'Dividends distribuïts als accionistes',
-            'Càrrega fiscal efectiva sobre el resultat',
-            'Reserves per a contingències futures',
-            'Amortització d\'actius intangibles clau',
-            'Fons de maniobra i posició de tresoreria'
+            'Recurring subscription revenue',
+            'Commercial and acquisition cost',
+            'Operating margin before depreciation',
+            'Investment in technology platform',
+            'Adjusted net financial debt',
+            'Dividends distributed to shareholders',
+            'Effective tax burden on earnings',
+            'Reserves for future contingencies',
+            'Depreciation of key intangible assets',
+            'Working capital and cash position'
         ],
-        'geo_categories': ['Nord-est', 'Centre', 'Llevant', 'Sud', 'Portugal', 'Internacional', 'Àsia-Pacífic', 'Amèrica Llatina'],
-        'series': ['Real', 'Pressupost', 'Objectiu'],
-        'radar_axes': ['Liquiditat', 'Rendibilitat', 'Creixement', 'Solvència', 'Eficiència', 'Conversió', 'Endeutament', 'Visibilitat futura'],
-        'scatter_x': ('Risc (volatilitat %)', 5, 40),
-        'scatter_y': ('Rendiment anual (%)', -10, 35),
-        'map_metric': 'Ingressos per província (M€)',
-        'combo_primary': 'Facturació mensual (M€)',
-        'combo_secondary': 'Marge EBITDA (%)',
-        'stock_label': 'Preu de l\'acció (€)'
+        'geo_categories': ['Northeast', 'Central', 'East', 'South', 'Portugal', 'International', 'Asia-Pacific', 'Latin America'],
+        'series': ['Actual', 'Budget', 'Target'],
+        'radar_axes': ['Liquidity', 'Profitability', 'Growth', 'Solvency', 'Efficiency', 'Conversion', 'Leverage', 'Forward visibility'],
+        'scatter_x': ('Risk (volatility %)', 5, 40),
+        'scatter_y': ('Annual return (%)', -10, 35),
+        'map_metric': 'Revenue by province (M€)',
+        'combo_primary': 'Monthly revenue (M€)',
+        'combo_secondary': 'EBITDA margin (%)',
+        'stock_label': 'Share price (€)'
     },
-    'geografia': {
-        'unit_abs': 'índex territorial',
-        'unit_pct': '% de superfície',
-        'simple_categories': ['Costa', 'Plana', 'Prelitoral', 'Muntanya', 'Urbà', 'Illes', 'Riu', 'Secà', 'Aiguamolls', 'Bosc', 'Conreus', 'Delta'],
+    'geography': {
+        'unit_abs': 'territorial index',
+        'unit_pct': '% of area',
+        'simple_categories': ['Coast', 'Plain', 'Pre-coastal', 'Mountain', 'Urban', 'Islands', 'River', 'Dryland', 'Wetlands', 'Forest', 'Cropland', 'Delta'],
         'long_categories': [
-            'Sòl urbà consolidat de densitat alta',
-            'Espais agraris de regadiu intensiu',
-            'Zones forestals de mitja muntanya',
-            'Corredors litorals d\'ús turístic',
-            'Àrees naturals protegides d\'alta fragilitat',
-            'Zones humides de valor ecològic especial',
-            'Polígons industrials periurbans d\'expansió',
-            'Àrees d\'interès agrícola preferent protegides',
-            'Espais fluvials de gestió integrada',
-            'Paisatges rurals de valor patrimonial reconegut'
+            'High-density consolidated urban land',
+            'Intensively irrigated agricultural land',
+            'Mid-mountain forest areas',
+            'Tourism-oriented coastal corridors',
+            'Highly fragile protected natural areas',
+            'Wetlands of special ecological value',
+            'Expanding peri-urban industrial estates',
+            'Protected priority agricultural areas',
+            'Integrated river-management areas',
+            'Rural landscapes with recognized heritage value'
         ],
-        'geo_categories': ['Val d\'Aran', 'Pallars', 'Segrià', 'Barcelonès', 'Empordà', 'Delta de l\'Ebre', 'Conca de Barberà', 'Pla de l\'Estany'],
-        'series': ['Coberta', 'Ús urbà', 'Protegit'],
-        'radar_axes': ['Accessibilitat', 'Pendents', 'Densitat', 'Equipaments', 'Risc', 'Atracció', 'Connectivitat', 'Pressió urbana'],
-        'scatter_x': ('Altitud mitjana (m)', 0, 2200),
-        'scatter_y': ('Densitat de població (hab/km²)', 5, 1500),
-        'map_metric': 'Densitat de població (hab/km²)',
-        'combo_primary': 'Flux turístic mensual (milers)',
-        'combo_secondary': 'Ocupació (%)',
-        'stock_label': 'Índex territorial'
+        'geo_categories': ['Aran Valley', 'Pallars', 'Segria', 'Barcelones', 'Emporda', 'Ebro Delta', 'Barbera Basin', 'Lake Plain'],
+        'series': ['Land cover', 'Urban use', 'Protected'],
+        'radar_axes': ['Accessibility', 'Slopes', 'Density', 'Facilities', 'Risk', 'Attractiveness', 'Connectivity', 'Urban pressure'],
+        'scatter_x': ('Average altitude (m)', 0, 2200),
+        'scatter_y': ('Population density (inhabitants/km²)', 5, 1500),
+        'map_metric': 'Population density (inhabitants/km²)',
+        'combo_primary': 'Monthly tourist flow (thousands)',
+        'combo_secondary': 'Occupancy (%)',
+        'stock_label': 'Territorial index'
     },
-    'manufactura': {
-        'unit_abs': 'milers d\'unitats',
-        'unit_pct': '% de producció',
-        'simple_categories': ['Línia A', 'Línia B', 'Línia C', 'Línia D', 'Retraball', 'Qualitat', 'Embalatge', 'Pintura', 'Proves', 'Ensamblatge', 'Accessoris', 'Manteniment'],
+    'manufacturing': {
+        'unit_abs': 'thousands of units',
+        'unit_pct': '% of production',
+        'simple_categories': ['Line A', 'Line B', 'Line C', 'Line D', 'Rework', 'Quality', 'Packaging', 'Painting', 'Testing', 'Assembly', 'Accessories', 'Maintenance'],
         'long_categories': [
-            'Línia d\'assemblatge d\'electrònica fina',
-            'Línia de mecanitzat de peces crítiques',
-            'Cel·la robotitzada d\'acabats superficials',
-            'Àrea de validació i control dimensional',
-            'Circuit de retraball i no conformitats',
-            'Secció d\'embalatge i preparació d\'expedició',
-            'Cabina de pintura en pols electrostàtica',
-            'Banc de proves i validació funcional',
-            'Zona d\'ensamblatge d\'equips finals',
-            'Taller de manteniment preventiu i predictiu'
+            'Fine-electronics assembly line',
+            'Critical-parts machining line',
+            'Robotic surface-finishing cell',
+            'Validation and dimensional-control area',
+            'Rework and non-conformity circuit',
+            'Packaging and shipment-preparation section',
+            'Electrostatic powder-coating booth',
+            'Testing bench and functional validation',
+            'Final-equipment assembly area',
+            'Preventive and predictive maintenance workshop'
         ],
-        'geo_categories': ['Planta Nord', 'Planta Centre', 'Planta Sud', 'Magatzem tècnic', 'Laboratori', 'Subcontracte', 'Planta Est', 'Plataforma logística'],
-        'series': ['Bona', 'Reprocessada', 'Descartada'],
-        'radar_axes': ['Qualitat', 'Productivitat', 'Seguretat', 'Manteniment', 'Cost', 'Flexibilitat', 'Traçabilitat', 'Robustesa'],
-        'scatter_x': ('Temps de cicle (s)', 20, 220),
-        'scatter_y': ('Defectes per milió', 30, 1800),
-        'map_metric': 'Producció per planta (milers d\'unitats)',
-        'combo_primary': 'Producció mensual (milers)',
+        'geo_categories': ['North Plant', 'Central Plant', 'South Plant', 'Technical warehouse', 'Laboratory', 'Subcontractor', 'East Plant', 'Logistics platform'],
+        'series': ['Accepted', 'Reworked', 'Rejected'],
+        'radar_axes': ['Quality', 'Productivity', 'Safety', 'Maintenance', 'Cost', 'Flexibility', 'Traceability', 'Robustness'],
+        'scatter_x': ('Cycle time (s)', 20, 220),
+        'scatter_y': ('Defects per million', 30, 1800),
+        'map_metric': 'Production by plant (thousands of units)',
+        'combo_primary': 'Monthly production (thousands)',
         'combo_secondary': 'OEE (%)',
-        'stock_label': 'Índex de cost industrial'
+        'stock_label': 'Industrial cost index'
     },
-    'operacions': {
-        'unit_abs': 'milers de comandes',
-        'unit_pct': '% d\'activitat',
-        'simple_categories': ['Recepció', 'Preparació', 'Expedició', 'Qualitat', 'Devolucions', 'Aprovisionament', 'Atenció al client', 'Facturació', 'Planificació', 'Transport', 'Magatzem', 'Retorn'],
+    'operations': {
+        'unit_abs': 'thousands of orders',
+        'unit_pct': '% of activity',
+        'simple_categories': ['Receiving', 'Picking', 'Dispatch', 'Quality', 'Returns', 'Supply', 'Customer care', 'Billing', 'Planning', 'Transport', 'Warehouse', 'Reverse logistics'],
         'long_categories': [
-            'Recepció de mercaderia de proveïdors',
-            'Preparació de comandes e-commerce',
-            'Expedició cap a botigues físiques',
-            'Control de qualitat de sortida',
-            'Gestió de devolucions i incidències',
-            'Aprovisionament de materials estratègics',
-            'Atenció al client postvenda multicanal',
-            'Facturació i conciliació de comandes',
-            'Planificació de la demanda mensual',
-            'Gestió del transport de llarg recorregut'
+            'Receiving supplier merchandise',
+            'E-commerce order picking',
+            'Dispatch to physical stores',
+            'Outbound quality control',
+            'Returns and incident handling',
+            'Procurement of strategic materials',
+            'Multichannel post-sales customer care',
+            'Order billing and reconciliation',
+            'Monthly demand planning',
+            'Long-haul transport management'
         ],
-        'geo_categories': ['Hub Barcelona', 'Hub Girona', 'Hub Lleida', 'Hub Tarragona', 'Cross-dock', 'Última milla', 'Centre de distribució', 'Plataforma logística'],
-        'series': ['Planificat', 'Executat', 'Incidències'],
-        'radar_axes': ['Servei', 'Temps', 'Cost', 'Capacitat', 'Qualitat', 'Flexibilitat', 'Puntualitat', 'Escalabilitat'],
-        'scatter_x': ('Temps de preparació (min)', 5, 120),
-        'scatter_y': ('Comandes/hora', 20, 400),
-        'map_metric': 'Lliuraments a temps (%)',
-        'combo_primary': 'Comandes mensuals (milers)',
-        'combo_secondary': 'Puntualitat (%)',
-        'stock_label': 'Índex de cost logístic'
+        'geo_categories': ['Barcelona hub', 'Girona hub', 'Lleida hub', 'Tarragona hub', 'Cross-dock', 'Last mile', 'Distribution center', 'Logistics platform'],
+        'series': ['Planned', 'Executed', 'Incidents'],
+        'radar_axes': ['Service', 'Time', 'Cost', 'Capacity', 'Quality', 'Flexibility', 'On-time performance', 'Scalability'],
+        'scatter_x': ('Preparation time (min)', 5, 120),
+        'scatter_y': ('Orders/hour', 20, 400),
+        'map_metric': 'On-time deliveries (%)',
+        'combo_primary': 'Monthly orders (thousands)',
+        'combo_secondary': 'On-time performance (%)',
+        'stock_label': 'Logistics cost index'
     },
-    'salut': {
-        'unit_abs': 'milers de pacients',
-        'unit_pct': '% de casos',
-        'simple_categories': ['Atenció primària', 'Urgències', 'Hospitalització', 'Diagnòstic', 'Rehabilitació', 'Salut mental', 'Farmàcia', 'Oncologia', 'Pediatria', 'Geriatria', 'Cirurgia', 'Cardiologia'],
+    'health': {
+        'unit_abs': 'thousands of patients',
+        'unit_pct': '% of cases',
+        'simple_categories': ['Primary care', 'Emergency', 'Hospitalization', 'Diagnosis', 'Rehabilitation', 'Mental health', 'Pharmacy', 'Oncology', 'Pediatrics', 'Geriatrics', 'Surgery', 'Cardiology'],
         'long_categories': [
-            'Pacients amb seguiment telemàtic postoperatori',
-            'Casos atesos al circuit ràpid de diagnòstic',
-            'Ingressos de medicina interna d\'alta complexitat',
-            'Programa de prevenció cardiovascular comunitària',
-            'Unitat de rehabilitació funcional intensiva',
-            'Consultes de salut mental en atenció primària',
-            'Dispensació farmacèutica de medicació crònica',
-            'Pacients en tractament oncològic actiu',
-            'Visites pediàtriques en centres d\'atenció primària',
-            'Atenció geriàtrica en residències i domicili'
+            'Patients under post-operative remote monitoring',
+            'Cases handled through the rapid-diagnosis pathway',
+            'High-complexity internal medicine admissions',
+            'Community cardiovascular prevention program',
+            'Intensive functional rehabilitation unit',
+            'Primary-care mental-health consultations',
+            'Pharmaceutical dispensing of chronic medication',
+            'Patients in active oncology treatment',
+            'Pediatric visits in primary-care centers',
+            'Geriatric care in residences and at home'
         ],
-        'geo_categories': ['Barcelona', 'Girona', 'Lleida', 'Tarragona', 'Catalunya Central', 'Terres de l\'Ebre', 'Alt Pirineu', 'Vallès Occidental'],
-        'series': ['Resolts', 'Amb seguiment', 'Derivats'],
-        'radar_axes': ['Accessibilitat', 'Qualitat', 'Temps d\'espera', 'Resolució', 'Satisfacció', 'Prevenció', 'Continuïtat assistencial', 'Cobertura'],
-        'scatter_x': ('Dies d\'espera', 2, 180),
-        'scatter_y': ('Casos resolts (%)', 40, 98),
-        'map_metric': 'Llista d\'espera mitjana (dies)',
-        'combo_primary': 'Visites mensuals (milers)',
-        'combo_secondary': 'Temps mitjà d\'espera (dies)',
-        'stock_label': 'Índex de cost sanitari'
+        'geo_categories': ['Barcelona', 'Girona', 'Lleida', 'Tarragona', 'Central Catalonia', 'Ebro Lands', 'High Pyrenees', 'Western Valles'],
+        'series': ['Resolved', 'Under follow-up', 'Referred'],
+        'radar_axes': ['Accessibility', 'Quality', 'Waiting time', 'Resolution', 'Satisfaction', 'Prevention', 'Continuity of care', 'Coverage'],
+        'scatter_x': ('Waiting days', 2, 180),
+        'scatter_y': ('Resolved cases (%)', 40, 98),
+        'map_metric': 'Average waiting list (days)',
+        'combo_primary': 'Monthly visits (thousands)',
+        'combo_secondary': 'Average waiting time (days)',
+        'stock_label': 'Healthcare cost index'
     },
-    'vendes': {
+    'sales': {
         'unit_abs': 'M€',
-        'unit_pct': '% de vendes',
-        'simple_categories': ['Botiga física', 'E-commerce', 'Distribuïdor', 'Marketplace', 'Canal telefònic', 'Direct-to-consumer', 'Franquícia', 'Subscripció', 'Export', 'Licitació', 'Majorista', 'Flash sale'],
+        'unit_pct': '% of sales',
+        'simple_categories': ['Physical store', 'E-commerce', 'Distributor', 'Marketplace', 'Phone channel', 'Direct-to-consumer', 'Franchise', 'Subscription', 'Export', 'Tender', 'Wholesaler', 'Flash sale'],
         'long_categories': [
-            'Electrodomèstics premium per a la llar',
-            'Accessoris connectats per consum domèstic',
-            'Petits aparells de cuina eficients',
-            'Servei de manteniment i ampliació de garantia',
-            'Canal professional d\'instal·ladors',
-            'Venda directa al consumidor final en línia',
-            'Operadors franquiciats de la xarxa regional',
-            'Model de subscripció de servei recurrent',
-            'Exportació a mercats europeus emergents',
-            'Licitació pública per a grans contractes'
+            'Premium home appliances',
+            'Connected accessories for household use',
+            'Efficient small kitchen appliances',
+            'Maintenance and extended-warranty service',
+            'Professional installer channel',
+            'Direct online sales to end customers',
+            'Franchise operators in the regional network',
+            'Recurring-service subscription model',
+            'Exports to emerging European markets',
+            'Public tenders for large contracts'
         ],
-        'geo_categories': ['Nord', 'Centre', 'Llevant', 'Sud', 'Balears', 'Portugal', 'Canàries', 'Internacional'],
+        'geo_categories': ['North', 'Central', 'East', 'South', 'Balearic Islands', 'Portugal', 'Canary Islands', 'International'],
         'series': ['Nord', 'Centre', 'Sud'],
-        'radar_axes': ['Volum', 'Marge', 'Rotació', 'Fidelització', 'Ticket mitjà', 'Conversió', 'Penetració', 'Recurrència'],
-        'scatter_x': ('Descompte mitjà (%)', 0, 35),
-        'scatter_y': ('Vendes per punt (k€)', 20, 500),
-        'map_metric': 'Vendes per habitant (€)',
-        'combo_primary': 'Facturació mensual (M€)',
-        'combo_secondary': 'Marge brut (%)',
-        'stock_label': 'Índex de preu al detall'
+        'series': ['North', 'Central', 'South'],
+        'radar_axes': ['Volume', 'Margin', 'Turnover', 'Loyalty', 'Average ticket', 'Conversion', 'Penetration', 'Recurrence'],
+        'scatter_x': ('Average discount (%)', 0, 35),
+        'scatter_y': ('Sales per outlet (k€)', 20, 500),
+        'map_metric': 'Sales per resident (€)',
+        'combo_primary': 'Monthly revenue (M€)',
+        'combo_secondary': 'Gross margin (%)',
+        'stock_label': 'Retail price index'
     },
     'web analytics': {
-        'unit_abs': 'milers de sessions',
-        'unit_pct': '% de sessions',
-        'simple_categories': ['Directe', 'Orgànic', 'Social', 'Email', 'Referència', 'Paid Search', 'Afiliació', 'Display', 'Push', 'App', 'QR', 'Vídeo'],
+        'unit_abs': 'thousands of sessions',
+        'unit_pct': '% of sessions',
+        'simple_categories': ['Direct', 'Organic', 'Social', 'Email', 'Referral', 'Paid Search', 'Affiliate', 'Display', 'Push', 'App', 'QR', 'Video'],
         'long_categories': [
-            'Campanya de captació de leads B2B per cercadors',
-            'Programa de fidelització mitjançant email segmentat',
-            'Promoció de temporada en xarxes socials',
-            'Trànsit de marca des de comparadors externs',
-            'Visites recurrents des de l\'aplicació mòbil',
-            'Campanya de display en xarxes de contingut',
-            'Pàgines d\'aterratge de publicitat de pagament',
-            'Trànsit provinent de lectures en blogs afiliats',
-            'Notificacions push per a usuaris recurrents',
-            'Trànsit des de codis QR en publicitat física'
+            'B2B lead-generation search campaign',
+            'Loyalty program through segmented email',
+            'Seasonal promotion on social networks',
+            'Branded traffic from external comparison sites',
+            'Recurring visits from the mobile app',
+            'Display campaign across content networks',
+            'Paid-advertising landing pages',
+            'Traffic from affiliate blog articles',
+            'Push notifications for returning users',
+            'Traffic from QR codes in physical advertising'
         ],
-        'geo_categories': ['SEO', 'SEM', 'CRM', 'Social', 'Afiliació', 'App', 'Display', 'Referral'],
-        'series': ['Rebot baix', 'Navegació mitjana', 'Conversió'],
-        'radar_axes': ['Captació', 'Conversió', 'Retenció', 'Profunditat', 'Velocitat', 'ROI', 'Engagement', 'Qualitat del trànsit'],
-        'scatter_x': ('Temps de càrrega (s)', 0.5, 5.0),
-        'scatter_y': ('Conversió (%)', 0.2, 8.0),
-        'map_metric': 'Sessions per territori (milers)',
-        'combo_primary': 'Sessions mensuals (milers)',
-        'combo_secondary': 'Conversió (%)',
-        'stock_label': 'Índex de CPC (€)'
+        'geo_categories': ['SEO', 'SEM', 'CRM', 'Social', 'Affiliate', 'App', 'Display', 'Referral'],
+        'series': ['Low bounce', 'Average browsing', 'Conversion'],
+        'radar_axes': ['Acquisition', 'Conversion', 'Retention', 'Depth', 'Speed', 'ROI', 'Engagement', 'Traffic quality'],
+        'scatter_x': ('Load time (s)', 0.5, 5.0),
+        'scatter_y': ('Conversion (%)', 0.2, 8.0),
+        'map_metric': 'Sessions by territory (thousands)',
+        'combo_primary': 'Monthly sessions (thousands)',
+        'combo_secondary': 'Conversion (%)',
+        'stock_label': 'CPC index (€)'
     },
 }
 
 DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]]] = {
-    'clima': {
+    'climate': {
         'category_value_ranges': {
-            'baixa': [(110.0, 240.0), (140.0, 280.0)],
-            'mitjana': [(70.0, 180.0), (90.0, 210.0)],
+            'low': [(110.0, 240.0), (140.0, 280.0)],
+            'medium': [(70.0, 180.0), (90.0, 210.0)],
             'alta': [(40.0, 120.0), (55.0, 145.0)],
-            'molt alta': [(22.0, 80.0), (30.0, 95.0)],
+            'very high': [(22.0, 80.0), (30.0, 95.0)],
         },
         'map_value_ranges': {
-            'baixa': [(6.5, 12.0), (5.5, 10.5)],
-            'mitjana': [(4.5, 9.0), (3.8, 7.8)],
+            'low': [(6.5, 12.0), (5.5, 10.5)],
+            'medium': [(4.5, 9.0), (3.8, 7.8)],
             'alta': [(3.0, 6.5), (2.6, 5.5)],
-            'molt alta': [(2.0, 4.8), (1.8, 4.0)],
+            'very high': [(2.0, 4.8), (1.8, 4.0)],
         },
     },
-    'demografia': {
+    'demographics': {
         'category_value_ranges': {
-            'baixa': [(220.0, 950.0), (180.0, 820.0)],
-            'mitjana': [(140.0, 700.0), (110.0, 580.0)],
+            'low': [(220.0, 950.0), (180.0, 820.0)],
+            'medium': [(140.0, 700.0), (110.0, 580.0)],
             'alta': [(90.0, 460.0), (70.0, 360.0)],
-            'molt alta': [(45.0, 240.0), (35.0, 190.0)],
+            'very high': [(45.0, 240.0), (35.0, 190.0)],
         },
         'map_value_ranges': {
-            'baixa': [(220.0, 620.0), (180.0, 520.0)],
-            'mitjana': [(140.0, 420.0), (110.0, 340.0)],
+            'low': [(220.0, 620.0), (180.0, 520.0)],
+            'medium': [(140.0, 420.0), (110.0, 340.0)],
             'alta': [(80.0, 260.0), (60.0, 220.0)],
-            'molt alta': [(35.0, 160.0), (25.0, 120.0)],
+            'very high': [(35.0, 160.0), (25.0, 120.0)],
         },
     },
-    'educació': {
+    'education': {
         'category_value_ranges': {
-            'baixa': [(80.0, 360.0), (60.0, 280.0)],
-            'mitjana': [(50.0, 240.0), (35.0, 190.0)],
+            'low': [(80.0, 360.0), (60.0, 280.0)],
+            'medium': [(50.0, 240.0), (35.0, 190.0)],
             'alta': [(25.0, 130.0), (18.0, 100.0)],
-            'molt alta': [(10.0, 70.0), (8.0, 55.0)],
+            'very high': [(10.0, 70.0), (8.0, 55.0)],
         },
         'map_value_ranges': {
-            'baixa': [(14.0, 28.0), (11.0, 24.0)],
-            'mitjana': [(9.0, 21.0), (7.0, 17.0)],
+            'low': [(14.0, 28.0), (11.0, 24.0)],
+            'medium': [(9.0, 21.0), (7.0, 17.0)],
             'alta': [(6.0, 15.0), (4.5, 12.0)],
-            'molt alta': [(3.0, 9.0), (2.5, 7.5)],
+            'very high': [(3.0, 9.0), (2.5, 7.5)],
         },
     },
-    'energia': {
+    'energy': {
         'category_value_ranges': {
-            'baixa': [(600.0, 4200.0), (450.0, 3200.0)],
-            'mitjana': [(300.0, 2500.0), (220.0, 1800.0)],
+            'low': [(600.0, 4200.0), (450.0, 3200.0)],
+            'medium': [(300.0, 2500.0), (220.0, 1800.0)],
             'alta': [(140.0, 1200.0), (100.0, 900.0)],
-            'molt alta': [(60.0, 520.0), (40.0, 380.0)],
+            'very high': [(60.0, 520.0), (40.0, 380.0)],
         },
         'map_value_ranges': {
-            'baixa': [(2.0, 8.5), (1.5, 6.5)],
-            'mitjana': [(1.2, 5.8), (0.9, 4.5)],
+            'low': [(2.0, 8.5), (1.5, 6.5)],
+            'medium': [(1.2, 5.8), (0.9, 4.5)],
             'alta': [(0.7, 3.8), (0.5, 2.8)],
-            'molt alta': [(0.3, 1.8), (0.2, 1.3)],
+            'very high': [(0.3, 1.8), (0.2, 1.3)],
         },
     },
-    'finances': {
+    'finance': {
         'category_value_ranges': {
-            'baixa': [(40.0, 240.0), (30.0, 180.0)],
-            'mitjana': [(22.0, 150.0), (16.0, 110.0)],
+            'low': [(40.0, 240.0), (30.0, 180.0)],
+            'medium': [(22.0, 150.0), (16.0, 110.0)],
             'alta': [(10.0, 85.0), (8.0, 65.0)],
-            'molt alta': [(4.0, 38.0), (3.0, 28.0)],
+            'very high': [(4.0, 38.0), (3.0, 28.0)],
         },
         'map_value_ranges': {
-            'baixa': [(60.0, 380.0), (45.0, 300.0)],
-            'mitjana': [(35.0, 220.0), (25.0, 170.0)],
+            'low': [(60.0, 380.0), (45.0, 300.0)],
+            'medium': [(35.0, 220.0), (25.0, 170.0)],
             'alta': [(18.0, 120.0), (12.0, 90.0)],
-            'molt alta': [(7.0, 55.0), (5.0, 40.0)],
+            'very high': [(7.0, 55.0), (5.0, 40.0)],
         },
     },
-    'geografia': {
+    'geography': {
         'category_value_ranges': {
-            'baixa': [(45.0, 95.0), (35.0, 85.0)],
-            'mitjana': [(28.0, 78.0), (22.0, 68.0)],
+            'low': [(45.0, 95.0), (35.0, 85.0)],
+            'medium': [(28.0, 78.0), (22.0, 68.0)],
             'alta': [(16.0, 58.0), (12.0, 48.0)],
-            'molt alta': [(8.0, 34.0), (6.0, 26.0)],
+            'very high': [(8.0, 34.0), (6.0, 26.0)],
         },
         'map_value_ranges': {
-            'baixa': [(250.0, 1500.0), (180.0, 1200.0)],
-            'mitjana': [(120.0, 900.0), (90.0, 700.0)],
+            'low': [(250.0, 1500.0), (180.0, 1200.0)],
+            'medium': [(120.0, 900.0), (90.0, 700.0)],
             'alta': [(55.0, 420.0), (40.0, 320.0)],
-            'molt alta': [(12.0, 180.0), (8.0, 130.0)],
+            'very high': [(12.0, 180.0), (8.0, 130.0)],
         },
     },
-    'manufactura': {
+    'manufacturing': {
         'category_value_ranges': {
-            'baixa': [(40.0, 240.0), (30.0, 180.0)],
-            'mitjana': [(24.0, 155.0), (18.0, 120.0)],
+            'low': [(40.0, 240.0), (30.0, 180.0)],
+            'medium': [(24.0, 155.0), (18.0, 120.0)],
             'alta': [(12.0, 82.0), (9.0, 64.0)],
-            'molt alta': [(5.0, 34.0), (4.0, 26.0)],
+            'very high': [(5.0, 34.0), (4.0, 26.0)],
         },
         'map_value_ranges': {
-            'baixa': [(50.0, 260.0), (40.0, 210.0)],
-            'mitjana': [(28.0, 170.0), (22.0, 130.0)],
+            'low': [(50.0, 260.0), (40.0, 210.0)],
+            'medium': [(28.0, 170.0), (22.0, 130.0)],
             'alta': [(14.0, 90.0), (10.0, 70.0)],
-            'molt alta': [(6.0, 40.0), (4.0, 28.0)],
+            'very high': [(6.0, 40.0), (4.0, 28.0)],
         },
     },
-    'operacions': {
+    'operations': {
         'category_value_ranges': {
-            'baixa': [(24.0, 180.0), (18.0, 140.0)],
-            'mitjana': [(14.0, 110.0), (10.0, 82.0)],
+            'low': [(24.0, 180.0), (18.0, 140.0)],
+            'medium': [(14.0, 110.0), (10.0, 82.0)],
             'alta': [(7.0, 56.0), (5.0, 42.0)],
-            'molt alta': [(3.0, 24.0), (2.0, 18.0)],
+            'very high': [(3.0, 24.0), (2.0, 18.0)],
         },
         'map_value_ranges': {
-            'baixa': [(90.0, 99.0), (86.0, 97.0)],
-            'mitjana': [(82.0, 96.0), (78.0, 94.0)],
+            'low': [(90.0, 99.0), (86.0, 97.0)],
+            'medium': [(82.0, 96.0), (78.0, 94.0)],
             'alta': [(74.0, 92.0), (70.0, 88.0)],
-            'molt alta': [(66.0, 84.0), (62.0, 80.0)],
+            'very high': [(66.0, 84.0), (62.0, 80.0)],
         },
     },
-    'salut': {
+    'health': {
         'category_value_ranges': {
-            'baixa': [(60.0, 380.0), (45.0, 290.0)],
-            'mitjana': [(35.0, 220.0), (25.0, 170.0)],
+            'low': [(60.0, 380.0), (45.0, 290.0)],
+            'medium': [(35.0, 220.0), (25.0, 170.0)],
             'alta': [(18.0, 120.0), (12.0, 90.0)],
-            'molt alta': [(7.0, 55.0), (5.0, 42.0)],
+            'very high': [(7.0, 55.0), (5.0, 42.0)],
         },
         'map_value_ranges': {
-            'baixa': [(35.0, 140.0), (28.0, 120.0)],
-            'mitjana': [(22.0, 100.0), (16.0, 80.0)],
+            'low': [(35.0, 140.0), (28.0, 120.0)],
+            'medium': [(22.0, 100.0), (16.0, 80.0)],
             'alta': [(12.0, 60.0), (9.0, 46.0)],
-            'molt alta': [(5.0, 28.0), (4.0, 22.0)],
+            'very high': [(5.0, 28.0), (4.0, 22.0)],
         },
     },
-    'vendes': {
+    'sales': {
         'category_value_ranges': {
-            'baixa': [(25.0, 180.0), (18.0, 140.0)],
-            'mitjana': [(14.0, 105.0), (10.0, 82.0)],
+            'low': [(25.0, 180.0), (18.0, 140.0)],
+            'medium': [(14.0, 105.0), (10.0, 82.0)],
             'alta': [(7.0, 56.0), (5.0, 44.0)],
-            'molt alta': [(3.0, 26.0), (2.0, 18.0)],
+            'very high': [(3.0, 26.0), (2.0, 18.0)],
         },
         'map_value_ranges': {
-            'baixa': [(650.0, 1600.0), (500.0, 1350.0)],
-            'mitjana': [(380.0, 1200.0), (300.0, 920.0)],
+            'low': [(650.0, 1600.0), (500.0, 1350.0)],
+            'medium': [(380.0, 1200.0), (300.0, 920.0)],
             'alta': [(180.0, 720.0), (140.0, 560.0)],
-            'molt alta': [(80.0, 340.0), (60.0, 250.0)],
+            'very high': [(80.0, 340.0), (60.0, 250.0)],
         },
     },
     'web analytics': {
         'category_value_ranges': {
-            'baixa': [(140.0, 900.0), (100.0, 700.0)],
-            'mitjana': [(80.0, 560.0), (60.0, 420.0)],
+            'low': [(140.0, 900.0), (100.0, 700.0)],
+            'medium': [(80.0, 560.0), (60.0, 420.0)],
             'alta': [(35.0, 260.0), (25.0, 190.0)],
-            'molt alta': [(12.0, 110.0), (8.0, 80.0)],
+            'very high': [(12.0, 110.0), (8.0, 80.0)],
         },
         'map_value_ranges': {
-            'baixa': [(90.0, 450.0), (70.0, 360.0)],
-            'mitjana': [(55.0, 260.0), (40.0, 210.0)],
+            'low': [(90.0, 450.0), (70.0, 360.0)],
+            'medium': [(55.0, 260.0), (40.0, 210.0)],
             'alta': [(24.0, 130.0), (18.0, 95.0)],
-            'molt alta': [(8.0, 55.0), (6.0, 40.0)],
+            'very high': [(8.0, 55.0), (6.0, 40.0)],
         },
     },
 }
@@ -566,12 +567,12 @@ def normalize_difficulty(difficulty: str) -> str:
 
 def difficulty_count(difficulty: str, kind: str, rnd: random.Random | None = None) -> int:
     if kind in {'scatter', 'surface'}:
-        return {'baixa': 16, 'mitjana': 24, 'alta': 32, 'molt alta': 40}.get(normalize_difficulty(difficulty), 24)
+        return {'low': 16, 'medium': 24, 'high': 32, 'very high': 40}.get(normalize_difficulty(difficulty), 24)
     intervals: Dict[str, Tuple[int, int]] = {
-        'baixa':     (2,  6),
-        'mitjana':   (7,  12),
-        'alta':      (13, 18),
-        'molt alta': (19, 30),
+        'low': (2, 6),
+        'medium': (7, 12),
+        'high': (13, 18),
+        'very high': (19, 30),
     }
     lo, hi = intervals.get(normalize_difficulty(difficulty), (7, 12))
     return rnd.randint(lo, hi) if rnd is not None else random.randint(lo, hi)
@@ -579,10 +580,10 @@ def difficulty_count(difficulty: str, kind: str, rnd: random.Random | None = Non
 
 def radar_axis_count(difficulty: str, max_axes: int) -> int:
     target = {
-        'baixa': 4,
-        'mitjana': 5,
-        'alta': 6,
-        'molt alta': 8,
+        'low': 4,
+        'medium': 5,
+        'high': 6,
+        'very high': 8,
     }.get(normalize_difficulty(difficulty), 5)
     return max(3, min(target, max_axes))
 
@@ -631,15 +632,213 @@ def clean_row(row: Dict[str, Any]) -> Dict[str, Any]:
             out[k] = v.item()
         else:
             out[k] = v
+
     return out
 
 
+SOURCE_CASE_KEY_MAP = {
+    'Excel_family': 'excel_family',
+    'subtype_excel': 'excel_subtype',
+    'style_varian': 'style_variant',
+    'quote_subtype_5000': 'quota_subtype_5000',
+    'quote_subtype_500': 'quota_subtype_500',
+    'codi_subtipus': 'code_subtype',
+    'familia_excel': 'excel_family',
+    'subtipus_excel': 'excel_subtype',
+    'estructura_dades': 'data_structure',
+    'patro_estadistic': 'statistic_pattern',
+    'domini_semantic': 'semantic_domain',
+    'dificultat': 'difficulty',
+}
+
+DIFFICULTY_OUTPUT_MAP = {
+    'baixa': 'low',
+    'mitjana': 'medium',
+    'alta': 'high',
+    'molt alta': 'very high',
+}
+
+DOMAIN_OUTPUT_MAP = {
+    'vendes': 'sales',
+    'salut': 'health',
+    'educació': 'education',
+    'demografia': 'demographics',
+    'operacions': 'operations',
+    'energia': 'energy',
+    'finances': 'finance',
+    'manufactura': 'manufacturing',
+    'clima': 'climate',
+    'geografia': 'geography',
+    'web analytics': 'web analytics',
+}
+
+STRUCTURE_OUTPUT_MAP = {
+    'categòric simple': 'simple categorical',
+    'categòric multiserie': 'multi-series categorical',
+    'categòric amb etiquetes llargues': 'categorical with long labels',
+    'categòric ordenat': 'ordered categorical',
+    'categòric ordenat + acumulat': 'ordered categorical + cumulative',
+    'sèrie temporal': 'time series',
+    'sèrie temporal discreta': 'discrete time series',
+    'multiserie temporal': 'multi-series temporal',
+    'multiserie temporal acumulada': 'cumulative multi-series temporal',
+    'parts del tot simple': 'simple part-of-whole',
+    'parts del tot amb cua llarga': 'part-of-whole with long tail',
+    'parts del tot multianell': 'multi-ring part-of-whole',
+    'bivariant numèrica': 'numeric bivariate',
+    'OHLC temporal': 'temporal OHLC',
+    'graella numèrica 2D': '2D numeric grid',
+    'multivariable sobre eixos comuns': 'multivariable on common axes',
+    'distribució univariant': 'univariate distribution',
+    'procés per etapes': 'stage-by-stage process',
+    'multiserie mixta': 'mixed multi-series',
+    'temporal amb eix secundari': 'temporal with secondary axis',
+    'geogràfica': 'geographic',
+}
+
+PATTERN_OUTPUT_MAP = {
+    'diferències clares': 'clear differences',
+    'valors molt propers': 'very close values',
+    'cua llarga': 'long tail',
+    'pic local': 'local peak',
+    'valors negatius': 'negative values',
+    'creixement': 'growth',
+    'decreixement': 'decline',
+    'estacionalitat': 'seasonality',
+    'canvi de règim': 'regime change',
+    'soroll alt': 'high noise',
+    'pic sobtat': 'sudden spike',
+    'vall sobtada': 'sudden valley',
+    'parts equilibrades': 'balanced parts',
+    'part dominant': 'dominant part',
+    'segments molt propers': 'very close segments',
+    'acumulació creixent': 'growing accumulation',
+    'correlació positiva': 'positive correlation',
+    'correlació negativa': 'negative correlation',
+    'correlació nul·la': 'no correlation',
+    'outlier clar': 'clear outlier',
+    'clústers': 'clusters',
+    'relació corba': 'curved relationship',
+    'alta volatilitat': 'high volatility',
+    'baixa volatilitat': 'low volatility',
+    'tendència alcista': 'upward trend',
+    'tendència baixista': 'downward trend',
+    'gap puntual': 'single gap',
+    'superfície suau': 'smooth surface',
+    'superfície rugosa': 'rough surface',
+    'pic central': 'central peak',
+    'doble pic': 'double peak',
+    'gradient diagonal': 'diagonal gradient',
+    'perfil equilibrat': 'balanced profile',
+    'perfil espigat': 'spiky profile',
+    'dues sèries contrastades': 'two contrasting series',
+    'una dimensió dominant': 'one dominant dimension',
+    'simètrica': 'symmetric',
+    'asimètrica': 'asymmetric',
+    'bimodal': 'bimodal',
+    '80/20 marcat': 'clear 80/20',
+    'concentració moderada': 'moderate concentration',
+    'concentració forta': 'strong concentration',
+    'caiguda uniforme': 'uniform drop',
+    'bottleneck clar': 'clear bottleneck',
+    'caiguda tardana': 'late drop',
+    'caiguda inicial forta': 'strong initial drop',
+    'creixement amb taxa': 'growth with rate',
+    'volum i percentatge': 'volume and percentage',
+    'dues escales diferents': 'two different scales',
+    'sèrie principal + objectiu': 'main series + target',
+}
+
+RECORD_FIELD_MAP = {
+    'categoria': 'category',
+    'serie': 'series',
+    'valor': 'value',
+    'regio': 'region',
+    'grup': 'group',
+    'data': 'date',
+    'obertura': 'open',
+    'maxim': 'high',
+    'minim': 'low',
+    'tancament': 'close',
+    'volum': 'volume',
+    'eix': 'axis',
+}
+
+
+def translate_case_value(key: str, value: Any) -> Any:
+    if value is None:
+        return None
+    text = str(value).strip().lower()
+    if key == 'difficulty':
+        return DIFFICULTY_OUTPUT_MAP.get(text, value)
+    if key == 'semantic_domain':
+        return DOMAIN_OUTPUT_MAP.get(text, value)
+    if key == 'data_structure':
+        return STRUCTURE_OUTPUT_MAP.get(text, value)
+    if key == 'statistic_pattern':
+        return PATTERN_OUTPUT_MAP.get(text, value)
+    if key == 'question_template':
+        return str(value).replace('{element_objetiu}', '{target_element}')
+    return value
+
+
+def translate_source_case(row: Dict[str, Any]) -> Dict[str, Any]:
+    translated: Dict[str, Any] = {}
+    for key, value in row.items():
+        english_key = SOURCE_CASE_KEY_MAP.get(key, key)
+        translated[english_key] = translate_case_value(english_key, value)
+    return translated
+
+
+def translate_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    translated_records: List[Dict[str, Any]] = []
+    for record in records:
+        translated_records.append({RECORD_FIELD_MAP.get(key, key): value for key, value in record.items()})
+    return translated_records
+
+
+def translate_encoding(encoding: Dict[str, Any]) -> Dict[str, Any]:
+    translated: Dict[str, Any] = {}
+    for channel, spec in encoding.items():
+        translated[channel] = {
+            **spec,
+            'field': RECORD_FIELD_MAP.get(spec.get('field'), spec.get('field')),
+        }
+    return translated
+
+
+def translate_axes(axes: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    translated: Dict[str, Dict[str, Any]] = {}
+    for axis_name, axis in axes.items():
+        translated[axis_name] = {
+            **axis,
+            'field': RECORD_FIELD_MAP.get(axis.get('field'), axis.get('field')),
+        }
+    return translated
+
+
+def export_instance(instance: Dict[str, Any]) -> Dict[str, Any]:
+    data = instance.get('data', {})
+    source = data.get('source', {})
+    exported = dict(instance)
+    exported['data'] = {
+        **data,
+        'source': {
+            **source,
+            'values': translate_records(source.get('values', [])),
+        },
+    }
+    exported['encoding'] = translate_encoding(instance.get('encoding', {}))
+    exported['axes'] = translate_axes(instance.get('axes', {}))
+    return exported
+
+
 def choose_categories(cfg: Dict[str, Any], structure: str, count: int) -> List[str]:
-    if structure == 'categòric amb etiquetes llargues':
+    if structure == 'categorical with long labels':
         return cfg['long_categories'][:count]
-    if structure == 'categòric ordenat':
-        return ['Molt baix', 'Baix', 'Mitjà', 'Alt', 'Molt alt', 'Molt alt +'][0:count]
-    if structure == 'geogràfica':
+    if structure == 'ordered categorical':
+        return ['Very low', 'Low', 'Medium', 'High', 'Very high', 'Very high +'][0:count]
+    if structure == 'geographic':
         return cfg['geo_categories'][:count]
     if 'temporal' in structure:
         if count <= 4:
@@ -667,20 +866,20 @@ def unique_preserve_order(values: List[str]) -> List[str]:
 
 def difficulty_segment_count(difficulty: str, max_segments: int) -> int:
     target = {
-        'baixa': 3,
-        'mitjana': 5,
-        'alta': 8,
-        'molt alta': 12,
+        'low': 3,
+        'medium': 5,
+        'high': 8,
+        'very high': 12,
     }.get(normalize_difficulty(difficulty), 5)
     return max(3, min(target, max_segments))
 
 
 def difficulty_stacked_series_count(difficulty: str, max_series: int) -> int:
     target = {
-        'baixa': 2,
-        'mitjana': 3,
-        'alta': 4,
-        'molt alta': 5,
+        'low': 2,
+        'medium': 3,
+        'high': 4,
+        'very high': 5,
     }.get(normalize_difficulty(difficulty), 3)
     return max(2, min(target, max_series))
 
@@ -698,9 +897,9 @@ def choose_parts_categories(cfg: Dict[str, Any], difficulty: str) -> List[str]:
 def choose_stacked_area_series(cfg: Dict[str, Any], difficulty: str) -> List[str]:
     base_series = list(cfg['series'])
     extras = [
-        'Altres',
+        'Others',
         'Residual',
-        'Complementària',
+        'Complementary',
     ]
     series_pool = unique_preserve_order(base_series + extras)
     count = difficulty_stacked_series_count(difficulty, len(series_pool))
@@ -708,20 +907,20 @@ def choose_stacked_area_series(cfg: Dict[str, Any], difficulty: str) -> List[str
 
 
 def choose_series(cfg: Dict[str, Any], row: Dict[str, Any], structure: str) -> List[str]:
-    subtype = str(row['subtipus_excel'])
-    family = str(row['familia_excel'])
-    if structure in {'sèrie temporal', 'sèrie temporal discreta', 'categòric simple', 'categòric ordenat', 'geogràfica'}:
+    subtype = str(row['subtype_excel'])
+    family = str(row['Excel_family'])
+    if structure in {'time series', 'discrete time series', 'simple categorical', 'ordered categorical', 'geographic'}:
         if family in {'Pie', 'Doughnut'}:
-            return ['Pes']
+            return ['Share']
         if '100% Stacked' in subtype and family in {'Bar', 'Column', 'Area', 'Line'}:
-            if structure == 'categòric simple':
-                return ['Pes relatiu']
-        return ['Valor']
-    if structure == 'parts del tot multianell':
-        return ['Actual', 'Objectiu']
+            if structure == 'simple categorical':
+                return ['Relative share']
+        return ['Value']
+    if structure == 'multi-ring part-of-whole':
+        return ['Actual', 'Target']
     if family == 'Area' and 'stacked' in subtype.lower():
-        return choose_stacked_area_series(cfg, str(row['dificultat']))
-    if 'multiserie' in structure or structure in {'multivariable sobre eixos comuns', 'temporal amb eix secundari'}:
+        return choose_stacked_area_series(cfg, str(row['difficulty']))
+    if 'multi-series' in structure or structure in {'multivariable on common axes', 'temporal with secondary axis'}:
         return cfg['series']
     return cfg['series']
 
@@ -730,37 +929,37 @@ def line_pattern(values_n: int, pattern: str, base: float, spread: float, rnd: r
     xs = list(range(values_n))
     vals: List[float] = []
     for i in xs:
-        if pattern in {'creixement', 'creixement amb taxa'}:
-            v = base + spread * (i / max(1, values_n - 1)) * (1.1 if pattern == 'creixement amb taxa' else 1.0)
+        if pattern in {'growth', 'growth with rate'}:
+            v = base + spread * (i / max(1, values_n - 1)) * (1.1 if pattern == 'growth with rate' else 1.0)
             v += rnd.uniform(-0.06, 0.06) * spread
-        elif pattern == 'decreixement':
+        elif pattern == 'decline':
             v = base + spread * (1 - i / max(1, values_n - 1))
             v += rnd.uniform(-0.06, 0.06) * spread
-        elif pattern == 'estacionalitat':
+        elif pattern == 'seasonality':
             v = base + spread * (0.5 + 0.45 * math.sin(2 * math.pi * i / max(3, values_n)))
             v += rnd.uniform(-0.04, 0.04) * spread
-        elif pattern == 'pic local':
+        elif pattern == 'local peak':
             peak = values_n // 2
             v = base + spread * (0.25 + 0.75 * math.exp(-((i - peak) ** 2) / max(1, values_n / 3)))
-        elif pattern == 'pic sobtat':
+        elif pattern == 'sudden spike':
             peak = rnd.randint(max(1, values_n // 3), max(1, values_n - 2))
             v = base + spread * (0.25 + (1.2 if i == peak else 0.15))
-        elif pattern == 'vall sobtada':
+        elif pattern == 'sudden valley':
             dip = rnd.randint(max(1, values_n // 3), max(1, values_n - 2))
             v = base + spread * (0.8 if i != dip else 0.15)
-        elif pattern == 'canvi de règim':
+        elif pattern == 'regime change':
             cut = max(1, values_n // 2)
             v = base + (0.35 if i < cut else 0.85) * spread + rnd.uniform(-0.05, 0.05) * spread
-        elif pattern == 'baixa volatilitat':
+        elif pattern == 'low volatility':
             v = base + 0.1 * spread + rnd.uniform(-0.03, 0.03) * spread
-        elif pattern == 'soroll alt':
+        elif pattern == 'high noise':
             v = base + 0.5 * spread + rnd.uniform(-0.4, 0.4) * spread
-        elif pattern == 'valors negatius':
+        elif pattern == 'negative values':
             v = base - spread / 2 + spread * (i / max(1, values_n - 1)) + rnd.uniform(-0.12, 0.12) * spread
-        elif pattern == 'valors molt propers':
+        elif pattern == 'very close values':
             center = base + 0.5 * spread
             v = center + rnd.uniform(-0.05, 0.05) * center
-        elif pattern == 'diferències clares':
+        elif pattern == 'clear differences':
             v = base + (0.15 + 0.8 * i / max(1, values_n - 1)) * spread
         else:
             v = base + spread * (0.45 + 0.12 * math.sin(i))
@@ -769,13 +968,13 @@ def line_pattern(values_n: int, pattern: str, base: float, spread: float, rnd: r
 
 
 def proportions(n: int, pattern: str, rnd: random.Random) -> List[float]:
-    if pattern in {'parts equilibrades', 'perfil equilibrat', 'valors molt propers', 'segments molt propers', 'distribució homogènia'}:
+    if pattern in {'balanced parts', 'balanced profile', 'very close values', 'very close segments', 'uniform distribution'}:
         raw = [1 + rnd.uniform(-0.06, 0.06) for _ in range(n)]
-    elif pattern in {'part dominant', 'cua llarga'}:
+    elif pattern in {'dominant part', 'long tail'}:
         raw = [n * 2.5] + [max(0.2, 1 / (i + 1) + rnd.uniform(0, 0.2)) for i in range(1, n)]
-    elif pattern == 'dues regions dominants':
+    elif pattern == 'two dominant regions':
         raw = [n * 1.8, n * 1.6] + [max(0.3, 0.8 + rnd.uniform(-0.1, 0.15)) for _ in range(max(0, n - 2))]
-    elif pattern in {'perfil espigat'}:
+    elif pattern in {'spiky profile'}:
         spike = rnd.randint(0, n - 1)
         raw = [0.7 + rnd.uniform(-0.1, 0.1) for _ in range(n)]
         raw[spike] = n * 2.2
@@ -836,9 +1035,9 @@ def build_axes_metadata(inst: Dict[str, Any], records: List[Dict[str, Any]], met
         elif axis_key == 'secondary_y':
             axis_unit = spec.get('title') or axis_unit
         elif axis_type == 'temporal':
-            axis_unit = axis_unit or 'data'
+            axis_unit = axis_unit or 'date'
         elif axis_type == 'nominal':
-            axis_unit = axis_unit or 'categoria'
+            axis_unit = axis_unit or 'category'
 
         min_value: Any = None
         max_value: Any = None
@@ -901,14 +1100,14 @@ def build_excel_metadata(title: str, axes: Dict[str, Dict[str, Any]]) -> Dict[st
         axes_payload[axis_key] = {
             'label': axis_label,
             'title': axis.get('title'),
-            'inici': axis.get('min'),
-            'final': axis.get('max'),
-            'unitat': axis.get('unit'),
+            'start': axis.get('min'),
+            'end': axis.get('max'),
+            'unit': axis.get('unit'),
             'interval': axis.get('interval'),
         }
     return {
-        'titol_grafic': title,
-        'eixos': axes_payload,
+        'chart_title': title,
+        'axes': axes_payload,
     }
 
 
@@ -917,19 +1116,23 @@ def count_series_in_records(records: List[Dict[str, Any]]) -> int:
         return 0
     if 'serie' in records[0]:
         return len(OrderedDict((r['serie'], None) for r in records))
+    if 'series' in records[0]:
+        return len(OrderedDict((r['series'], None) for r in records))
     if 'grup' in records[0]:
         return len(OrderedDict((r['grup'], None) for r in records))
+    if 'group' in records[0]:
+        return len(OrderedDict((r['group'], None) for r in records))
     return 1
 
 
 def generate_time_long(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    structure = row['estructura_dades']
-    family = row['familia_excel']
-    pattern = row['patro_estadistic']
-    count = difficulty_count(row['dificultat'], 'time', rnd)
+    structure = row['data_structure']
+    family = row['Excel_family']
+    pattern = row['statistic_pattern']
+    count = difficulty_count(row['difficulty'], 'time', rnd)
     categories = choose_categories(cfg, structure, count)
     series = choose_series(cfg, row, structure)
-    share_like = ('100% Stacked' in row['subtipus_excel']) or family in {'Pie', 'Doughnut'} or 'parts del tot' in structure
+    share_like = ('100% Stacked' in row['subtype_excel']) or family in {'Pie', 'Doughnut'} or 'part-of-whole' in structure
 
     records: List[Dict[str, Any]] = []
     if share_like and len(series) > 1:
@@ -942,20 +1145,20 @@ def generate_time_long(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Ran
     else:
         unit = cfg['unit_abs']
         y_title = cfg['unit_abs']
-        value_range = choose_value_range(cfg, row['dificultat'], 'category_value_ranges', rnd)
+        value_range = choose_value_range(cfg, row['difficulty'], 'category_value_ranges', rnd)
         for s_idx, ser in enumerate(series):
             lo, hi, base, spread = base_spread_for_value_range(value_range, rnd, s_idx, len(series))
             vals = line_pattern(len(categories), pattern, base, spread, rnd)
-            if '100% Stacked' in row['subtipus_excel'] and len(series) == 1:
+            if '100% Stacked' in row['subtype_excel'] and len(series) == 1:
                 vals = scale_to_percent(vals)
                 unit = cfg['unit_pct']
                 y_title = cfg['unit_pct']
             else:
-                vals = clamp_series_values(vals, lo, hi, allow_negative=pattern == 'valors negatius')
+                vals = clamp_series_values(vals, lo, hi, allow_negative=pattern == 'negative values')
             for cat, v in zip(categories, vals):
                 records.append({'categoria': cat, 'serie': ser, 'valor': float(v)})
     meta = {
-        'x_title': 'Període' if 'temporal' in structure else 'Categoria',
+        'x_title': 'Period' if 'temporal' in structure else 'Category',
         'y_title': y_title,
         'unit': unit,
         'series': series,
@@ -965,83 +1168,83 @@ def generate_time_long(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Ran
 
 
 def generate_parts(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    if row['estructura_dades'] == 'parts del tot multianell':
-        categories = choose_parts_categories(cfg, str(row['dificultat']))
-        series = ['Actual', 'Objectiu']
+    if row['data_structure'] == 'multi-ring part-of-whole':
+        categories = choose_parts_categories(cfg, str(row['difficulty']))
+        series = ['Actual', 'Target']
         records = []
         for ser in series:
-            vals = proportions(len(categories), row['patro_estadistic'], rnd)
+            vals = proportions(len(categories), row['statistic_pattern'], rnd)
             for cat, v in zip(categories, vals):
                 records.append({'categoria': cat, 'serie': ser, 'valor': v})
         return records, {
-            'x_title': 'Categoria',
+            'x_title': 'Category',
             'y_title': cfg['unit_pct'],
             'unit': cfg['unit_pct'],
             'series': series,
             'categories': categories,
         }
     else:
-        categories = choose_parts_categories(cfg, str(row['dificultat']))
-        vals = proportions(len(categories), row['patro_estadistic'], rnd)
-        records = [{'categoria': cat, 'serie': 'Pes', 'valor': v} for cat, v in zip(categories, vals)]
+        categories = choose_parts_categories(cfg, str(row['difficulty']))
+        vals = proportions(len(categories), row['statistic_pattern'], rnd)
+        records = [{'categoria': cat, 'serie': 'Share', 'valor': v} for cat, v in zip(categories, vals)]
         return records, {
-            'x_title': 'Categoria',
+            'x_title': 'Category',
             'y_title': cfg['unit_pct'],
             'unit': cfg['unit_pct'],
-            'series': ['Pes'],
+            'series': ['Share'],
             'categories': categories,
         }
 
 
 def generate_geo(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    categories = cfg['geo_categories'][:max(5, difficulty_count(row['dificultat'], 'geo', rnd))]
-    if row['familia_excel'] == 'Map' or row['estructura_dades'] == 'geogràfica':
-        pattern = row['patro_estadistic']
-        lo, hi = choose_value_range(cfg, row['dificultat'], 'map_value_ranges', rnd)
-        if pattern == 'gradient nord-sud':
-            vals = list(reversed(clamp_series_values(line_pattern(len(categories), 'creixement', lo, hi - lo, rnd), lo, hi)))
-        elif pattern == 'hotspot regional':
+    categories = cfg['geo_categories'][:max(5, difficulty_count(row['difficulty'], 'geo', rnd))]
+    if row['Excel_family'] == 'Map' or row['data_structure'] == 'geographic':
+        pattern = row['statistic_pattern']
+        lo, hi = choose_value_range(cfg, row['difficulty'], 'map_value_ranges', rnd)
+        if pattern == 'north-south gradient':
+            vals = list(reversed(clamp_series_values(line_pattern(len(categories), 'growth', lo, hi - lo, rnd), lo, hi)))
+        elif pattern == 'regional hotspot':
             vals = [round(rnd.uniform(lo, lo + 0.55 * (hi - lo)), 1) for _ in categories]
             vals[rnd.randrange(len(vals))] = round(rnd.uniform(lo + 0.78 * (hi - lo), hi), 1)
         else:
             vals = [round(rnd.uniform(lo, hi), 1) for _ in categories]
         records = [{'regio': cat, 'valor': v} for cat, v in zip(categories, vals)]
         return records, {
-            'x_title': 'Regió',
+            'x_title': 'Region',
             'y_title': cfg['map_metric'],
             'unit': cfg['map_metric'],
-            'series': ['Valor'],
+            'series': ['Value'],
             'categories': categories,
         }
     return generate_time_long(row, cfg, rnd)
 
 
 def generate_scatter(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    n = difficulty_count(row['dificultat'], 'scatter', rnd)
+    n = difficulty_count(row['difficulty'], 'scatter', rnd)
     x_name, x_min, x_max = cfg['scatter_x']
     y_name, y_min, y_max = cfg['scatter_y']
-    pattern = row['patro_estadistic']
-    groups = ['Grup 1', 'Grup 2'] if pattern == 'clústers' else ['Mostra']
+    pattern = row['statistic_pattern']
+    groups = ['Group 1', 'Group 2'] if pattern == 'clusters' else ['Sample']
     records = []
     for i in range(n):
-        if pattern == 'correlació positiva':
+        if pattern == 'positive correlation':
             x = rnd.uniform(x_min, x_max)
             ratio = (x - x_min) / (x_max - x_min)
             y = y_min + ratio * (y_max - y_min) + rnd.uniform(-0.08, 0.08) * (y_max - y_min)
-        elif pattern == 'correlació negativa':
+        elif pattern == 'negative correlation':
             x = rnd.uniform(x_min, x_max)
             ratio = (x - x_min) / (x_max - x_min)
             y = y_max - ratio * (y_max - y_min) + rnd.uniform(-0.08, 0.08) * (y_max - y_min)
-        elif pattern == 'correlació nul·la':
+        elif pattern == 'no correlation':
             x = rnd.uniform(x_min, x_max)
             y = rnd.uniform(y_min, y_max)
-        elif pattern == 'relació corba':
+        elif pattern == 'curved relationship':
             x = rnd.uniform(x_min, x_max)
             ratio = (x - x_min) / (x_max - x_min)
             y = y_min + (ratio ** 2) * (y_max - y_min) + rnd.uniform(-0.04, 0.04) * (y_max - y_min)
-        elif pattern == 'clústers':
+        elif pattern == 'clusters':
             grp = groups[i % 2]
-            if grp == 'Grup 1':
+            if grp == 'Group 1':
                 x = rnd.uniform(x_min, x_min + 0.35 * (x_max - x_min))
                 y = rnd.uniform(y_min, y_min + 0.35 * (y_max - y_min))
             else:
@@ -1049,7 +1252,7 @@ def generate_scatter(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Rando
                 y = rnd.uniform(y_min + 0.55 * (y_max - y_min), y_max)
             records.append({'x': round(x, 2), 'y': round(y, 2), 'grup': grp})
             continue
-        elif pattern == 'outlier clar':
+        elif pattern == 'clear outlier':
             if i == 0:
                 x = x_max * 0.98
                 y = y_max * 0.98
@@ -1106,63 +1309,63 @@ def radar_series_profile(cats: List[str], pattern: str, series_index: int, serie
 
 
 def generate_radar(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    cats = cfg['radar_axes'][:radar_axis_count(row['dificultat'], len(cfg['radar_axes']))]
+    cats = cfg['radar_axes'][:radar_axis_count(row['difficulty'], len(cfg['radar_axes']))]
     series = cfg['series'][:3]
     records = []
     for s_idx, ser in enumerate(series):
-        vals = radar_series_profile(cats, row['patro_estadistic'], s_idx, len(series), rnd)
+        vals = radar_series_profile(cats, row['statistic_pattern'], s_idx, len(series), rnd)
         for cat, v in zip(cats, vals):
             records.append({'categoria': cat, 'serie': ser, 'valor': round(v, 1)})
     return records, {
-        'x_title': 'Indicador',
-        'y_title': 'Puntuació (0-100)',
-        'unit': 'Puntuació (0-100)',
+        'x_title': 'Indicator',
+        'y_title': 'Score (0-100)',
+        'unit': 'Score (0-100)',
         'series': series,
         'categories': cats,
     }
 
 
 def generate_combo(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    n = difficulty_count(row['dificultat'], 'combo', rnd)
+    n = difficulty_count(row['difficulty'], 'combo', rnd)
     cats = MONTHS[:n] if n <= 6 else YEARS[-n:]
-    pattern = row['patro_estadistic']
-    lo, hi, base, spread = base_spread_for_value_range(choose_value_range(cfg, row['dificultat'], 'category_value_ranges', rnd), rnd)
+    pattern = row['statistic_pattern']
+    lo, hi, base, spread = base_spread_for_value_range(choose_value_range(cfg, row['difficulty'], 'category_value_ranges', rnd), rnd)
     primary = line_pattern(
         len(cats),
-        'creixement' if pattern in {'dues escales diferents', 'sèrie principal + objectiu', 'creixement amb taxa'} else pattern,
+        'growth' if pattern in {'two different scales', 'main series + target', 'growth with rate'} else pattern,
         base,
         spread,
         rnd,
     )
-    primary = clamp_series_values(primary, lo, hi, allow_negative=pattern == 'valors negatius')
-    if pattern == 'dues escales diferents':
+    primary = clamp_series_values(primary, lo, hi, allow_negative=pattern == 'negative values')
+    if pattern == 'two different scales':
         secondary = [round(10 + 8 * math.sin(i), 1) for i in range(len(cats))]
-    elif pattern == 'sèrie principal + objectiu':
+    elif pattern == 'main series + target':
         secondary = [round(sum(primary) / len(primary) * 0.95, 1) for _ in cats]
     else:
-        secondary = line_pattern(len(cats), 'baixa volatilitat', 25, 12, rnd)
+        secondary = line_pattern(len(cats), 'low volatility', 25, 12, rnd)
     records = []
     for cat, p, s in zip(cats, primary, secondary):
-        records.append({'categoria': cat, 'serie': 'Primària', 'valor': float(p), 'eix': 'primari'})
-        records.append({'categoria': cat, 'serie': 'Secundària', 'valor': float(s), 'eix': 'secundari'})
+        records.append({'categoria': cat, 'serie': 'Primary', 'valor': float(p), 'eix': 'primary'})
+        records.append({'categoria': cat, 'serie': 'Secondary', 'valor': float(s), 'eix': 'secondary'})
     return records, {
-        'x_title': 'Període',
+        'x_title': 'Period',
         'y_title': cfg['combo_primary'],
         'unit': cfg['combo_primary'],
         'secondary_title': cfg['combo_secondary'],
-        'series': ['Primària', 'Secundària'],
+        'series': ['Primary', 'Secondary'],
         'categories': cats,
     }
 
 
 def generate_stock(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    n = max(10, min(20, difficulty_count(row['dificultat'], 'stock', rnd) + 8))
+    n = max(10, min(20, difficulty_count(row['difficulty'], 'stock', rnd) + 8))
     dates = [f'2024-{m:02d}-{d:02d}' for m, d in zip(([1] * n), range(1, n + 1))]
-    pattern = row['patro_estadistic']
-    if pattern in {'creixement', 'baixa volatilitat'}:
+    pattern = row['statistic_pattern']
+    if pattern in {'growth', 'low volatility'}:
         closes = line_pattern(n, pattern, 70, 18, rnd)
     else:
-        closes = line_pattern(n, 'baixa volatilitat', 70, 18, rnd)
+        closes = line_pattern(n, 'low volatility', 70, 18, rnd)
     records = []
     prev_close = closes[0]
     for i, (date, close) in enumerate(zip(dates, closes)):
@@ -1173,7 +1376,7 @@ def generate_stock(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Random)
         records.append({'data': date, 'obertura': round(open_, 2), 'maxim': high, 'minim': low, 'tancament': round(close, 2), 'volum': volume})
         prev_close = close
     return records, {
-        'x_title': 'Data',
+        'x_title': 'Date',
         'y_title': cfg['stock_label'],
         'unit': cfg['stock_label'],
         'series': None,
@@ -1188,66 +1391,66 @@ def generate_surface(row: Dict[str, Any], cfg: Dict[str, Any], rnd: random.Rando
     for x in xs:
         for y in ys:
             z = 30 + 8 * math.sin(x) + 10 * math.cos(y / 2)
-            if row['patro_estadistic'] == 'superfície rugosa':
+            if row['statistic_pattern'] == 'rough surface':
                 z += rnd.uniform(-7, 7)
             records.append({'x': x, 'y': y, 'z': round(z, 1)})
     return records, {
-        'x_title': 'Eix X',
-        'y_title': 'Eix Y',
-        'unit': 'Intensitat',
+        'x_title': 'X Axis',
+        'y_title': 'Y Axis',
+        'unit': 'Intensity',
         'series': None,
         'categories': None,
     }
 
 
 def title_for(row: Dict[str, Any], cfg: Dict[str, Any], meta: Dict[str, Any]) -> str:
-    domain = row['domini_semantic']
-    structure = row['estructura_dades']
-    family = row['familia_excel']
+    domain = str(row['semantic_domain'])
+    structure = row['data_structure']
+    family = row['Excel_family']
     case_label = str(row['case_id']).removeprefix('CASE_')
     if family == 'Scatter':
-        return f"Relació entre indicadors de {domain} ({case_label})"
+        return f"Relationship between {domain} indicators ({case_label})"
     if family == 'Stock':
-        return f"Evolució diària de {cfg['stock_label'].lower()} ({case_label})"
+        return f"Daily evolution of {cfg['stock_label'].lower()} ({case_label})"
     if family == 'Map':
-        return f"Distribució territorial de {domain} ({case_label})"
+        return f"Territorial distribution of {domain} ({case_label})"
     if family == 'Surface':
-        return f"Superfície de resposta energètica ({case_label})"
-    if structure == 'parts del tot multianell':
-        return f"Composició comparada per categoria en {domain} ({case_label})"
-    if 'parts del tot' in structure:
-        return f"Pes relatiu per categoria en {domain} ({case_label})"
+        return f"Energy response surface ({case_label})"
+    if structure == 'multi-ring part-of-whole':
+        return f"Compared category composition in {domain} ({case_label})"
+    if 'part-of-whole' in structure:
+        return f"Relative share by category in {domain} ({case_label})"
     if 'temporal' in structure:
-        return f"Evolució de {domain} per període ({case_label})"
+        return f"Evolution of {domain} by period ({case_label})"
     if 'multivariable' in structure:
-        return f"Perfil comparat d'indicadors de {domain} ({case_label})"
-    if structure == 'geogràfica':
-        return f"Indicador territorial de {domain} ({case_label})"
-    return f"Indicadors de {domain} per categoria ({case_label})"
+        return f"Compared profile of {domain} indicators ({case_label})"
+    if structure == 'geographic':
+        return f"Territorial indicator for {domain} ({case_label})"
+    return f"{domain} indicators by category ({case_label})"
 
 
 def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
-    cfg = DOMAIN_CFG[str(row['domini_semantic']).strip().lower()]
+    cfg = DOMAIN_CFG[str(row['semantic_domain']).strip().lower()]
     rnd = rng_for(row['case_id'])
-    structure = row['estructura_dades']
-    family = row['familia_excel']
+    structure = row['data_structure']
+    family = row['Excel_family']
 
-    if family == 'Scatter' or structure == 'bivariant numèrica':
+    if family == 'Scatter' or structure == 'numeric bivariate':
         records, meta = generate_scatter(row, cfg, rnd)
         data_format = 'scatter'
         encoding = {
             'x': {'field': 'x', 'type': 'quantitative', 'title': meta['x_title']},
             'y': {'field': 'y', 'type': 'quantitative', 'title': meta['y_title']},
-            'color': {'field': 'grup', 'type': 'nominal', 'title': 'Grup'}
+            'color': {'field': 'grup', 'type': 'nominal', 'title': 'Group'}
         }
-    elif family == 'Stock' or structure == 'OHLC + volum':
+    elif family == 'Stock' or structure == 'OHLC + volume':
         records, meta = generate_stock(row, cfg, rnd)
         data_format = 'stock'
         encoding = {
             'x': {'field': 'data', 'type': 'temporal', 'title': meta['x_title']},
             'y': {'field': 'tancament', 'type': 'quantitative', 'title': meta['y_title']},
         }
-    elif family == 'Surface' or structure == 'graella numèrica 2D':
+    elif family == 'Surface' or structure == '2D numeric grid':
         records, meta = generate_surface(row, cfg, rnd)
         data_format = 'surface'
         encoding = {
@@ -1255,37 +1458,37 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
             'y': {'field': 'y', 'type': 'quantitative', 'title': meta['y_title']},
             'z': {'field': 'z', 'type': 'quantitative', 'title': meta['unit']}
         }
-    elif family == 'Radar' or structure == 'multivariable sobre eixos comuns':
+    elif family == 'Radar' or structure == 'multivariable on common axes':
         records, meta = generate_radar(row, cfg, rnd)
         data_format = 'category_long'
         encoding = {
             'x': {'field': 'categoria', 'type': 'nominal', 'title': meta['x_title']},
             'y': {'field': 'valor', 'type': 'quantitative', 'title': meta['y_title']},
-            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Sèrie'}
+            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Series'}
         }
-    elif family == 'Combo' or structure == 'temporal amb eix secundari':
+    elif family == 'Combo' or structure == 'temporal with secondary axis':
         records, meta = generate_combo(row, cfg, rnd)
         data_format = 'combo'
         encoding = {
             'x': {'field': 'categoria', 'type': 'nominal', 'title': meta['x_title']},
             'y': {'field': 'valor', 'type': 'quantitative', 'title': meta['y_title']},
-            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Sèrie'},
+            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Series'},
             'secondary_y': {'field': 'valor', 'type': 'quantitative', 'title': meta['secondary_title']}
         }
-    elif family == 'Map' or structure == 'geogràfica':
+    elif family == 'Map' or structure == 'geographic':
         records, meta = generate_geo(row, cfg, rnd)
         data_format = 'map'
         encoding = {
             'x': {'field': 'regio', 'type': 'nominal', 'title': meta['x_title']},
             'y': {'field': 'valor', 'type': 'quantitative', 'title': meta['y_title']},
         }
-    elif 'parts del tot' in structure or family in {'Pie', 'Doughnut'}:
+    elif 'part-of-whole' in structure or family in {'Pie', 'Doughnut'}:
         records, meta = generate_parts(row, cfg, rnd)
         data_format = 'category_long'
         encoding = {
             'x': {'field': 'categoria', 'type': 'nominal', 'title': meta['x_title']},
             'y': {'field': 'valor', 'type': 'quantitative', 'title': meta['y_title']},
-            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Sèrie'}
+            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Series'}
         }
     else:
         records, meta = generate_time_long(row, cfg, rnd)
@@ -1293,17 +1496,18 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
         encoding = {
             'x': {'field': 'categoria', 'type': 'nominal', 'title': meta['x_title']},
             'y': {'field': 'valor', 'type': 'quantitative', 'title': meta['y_title']},
-            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Sèrie'}
+            'color': {'field': 'serie', 'type': 'nominal', 'title': 'Series'}
         }
 
     title = title_for(row, cfg, meta)
+    source_case = translate_source_case(row)
 
-    exact_excel_supported = family not in {'Map', 'Surface'} and row['subtipus_excel'] not in {'Pie of Pie', 'Bar of Pie', 'Filled Map', 'Contour'}
-    render_mode = 'exacte' if exact_excel_supported else 'aproximat_o_metadades'
+    exact_excel_supported = family not in {'Map', 'Surface'} and row['subtype_excel'] not in {'Pie of Pie', 'Bar of Pie', 'Filled Map', 'Contour'}
+    render_mode = 'exact' if exact_excel_supported else 'approximate_or_metadata'
 
     provisional_inst = {
         'chart': {
-            'stack_mode': 'percent' if '100% Stacked' in row['subtipus_excel'] else ('normal' if 'Stacked' in row['subtipus_excel'] else None),
+            'stack_mode': 'percent' if '100% Stacked' in row['subtype_excel'] else ('normal' if 'Stacked' in row['subtype_excel'] else None),
         }
     }
     axes = build_axes_metadata(provisional_inst, records, meta, encoding)
@@ -1312,27 +1516,27 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
 
     return {
         '$schema': 'https://example.org/chart-canonical.schema.json',
-        'version': '1.0-exploratoria',
+        'version': '1.0-exploratory',
         'id': row['case_id'],
         'title': title,
-        'description': f"Instància canònica sintètica del gràfic {row['subtipus_excel']} en el domini {row['domini_semantic']}.",
+        'description': f"Synthetic canonical instance for the {row['subtipus_excel']} chart in the {source_case['semantic_domain']} domain.",
         'style_ref': STYLE_REF,
-        'source_case': row,
+        'source_case': source_case,
         'data': {
             'source': {'kind': 'inline', 'values': records},
-            'structure': row['estructura_dades'],
-            'statistical_pattern': row['patro_estadistic'],
-            'semantic_domain': row['domini_semantic'],
+            'structure': source_case['data_structure'],
+            'statistical_pattern': source_case['statistic_pattern'],
+            'semantic_domain': source_case['semantic_domain'],
             'unit': meta['unit'],
             'format': data_format,
         },
         'chart': {
             'family': row['familia_excel'].lower(),
-            'excel_family': row['familia_excel'],
-            'excel_subtype': row['subtipus_excel'],
-            'excel_subtype_code': row['codi_subtipus'],
-            'stack_mode': 'percent' if '100% Stacked' in row['subtipus_excel'] else ('normal' if 'Stacked' in row['subtipus_excel'] else None),
-            'orientation': 'horizontal' if row['familia_excel'] == 'Bar' else 'vertical',
+            'excel_family': row['Excel_family'],
+            'excel_subtype': row['subtype_excel'],
+            'excel_subtype_code': row['code_subtype'],
+            'stack_mode': 'percent' if '100% Stacked' in row['subtype_excel'] else ('normal' if 'Stacked' in row['subtype_excel'] else None),
+            'orientation': 'horizontal' if row['Excel_family'] == 'Bar' else 'vertical',
             'render_mode': render_mode,
             'exact_excel_supported': exact_excel_supported,
         },
@@ -1342,7 +1546,7 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
         'labels': {
             'title_visible': True,
             'legend_visible': series_count > 1,
-            'data_labels': 'etiquetes de dades' in str(row.get('variant_estil', '')).lower(),
+            'data_labels': 'data labels' in str(row.get('variant_estil', '')).lower() or 'etiquetes de dades' in str(row.get('variant_estil', '')).lower(),
         },
         'xlsxwriter': {
             'style': 10,
@@ -1377,14 +1581,14 @@ def add_metadata(ws, formats, inst, sheet_name):
     ws.write('A1', inst['title'], formats['title'])
     meta_rows = [
         ('Case ID', inst['id']),
-        ('Família Excel', inst['chart']['excel_family']),
-        ('Subtipus Excel', inst['chart']['excel_subtype']),
-        ('Estructura', inst['source_case']['estructura_dades']),
-        ('Patró', inst['source_case']['patro_estadistic']),
-        ('Dificultat', inst['source_case']['dificultat']),
-        ('Domini', inst['source_case']['domini_semantic']),
+        ('Excel family', inst['chart']['excel_family']),
+        ('Excel subtype', inst['chart']['excel_subtype']),
+        ('Data structure', inst['source_case']['data_structure']),
+        ('Pattern', inst['source_case']['statistic_pattern']),
+        ('Difficulty', inst['source_case']['difficulty']),
+        ('Domain', inst['source_case']['semantic_domain']),
         ('Style ref', inst['style_ref']['href']),
-        ('Render Excel', inst['chart']['render_mode']),
+        ('Excel render mode', inst['chart']['render_mode']),
     ]
 
     axes = inst.get('axes', {})
@@ -1394,10 +1598,10 @@ def add_metadata(ws, formats, inst, sheet_name):
         if not axis:
             continue
         meta_rows.extend([
-            (f'Eix {axis_label} - Mínim', axis.get('min')),
-            (f'Eix {axis_label} - Màxim', axis.get('max')),
-            (f'Eix {axis_label} - Interval', axis.get('interval')),
-            (f'Eix {axis_label} - Unitat', axis.get('unit')),
+            (f'Axis {axis_label} - Minimum', axis.get('min')),
+            (f'Axis {axis_label} - Maximum', axis.get('max')),
+            (f'Axis {axis_label} - Interval', axis.get('interval')),
+            (f'Axis {axis_label} - Unit', axis.get('unit')),
         ])
 
     r = 2
@@ -1409,22 +1613,22 @@ def add_metadata(ws, formats, inst, sheet_name):
 
 
 def add_summary_sheet(workbook, instances, sheet_map, render_stats):
-    ws = workbook.add_worksheet('Resum')
+    ws = workbook.add_worksheet('Summary')
     fmt_header = workbook.add_format({'bold': True, 'bg_color': '#D9E2F3', 'border': 1})
     fmt_link = workbook.add_format({'font_color': 'blue', 'underline': 1})
-    headers = ['case_id', 'full', 'familia_excel', 'subtipus_excel', 'estructura_dades', 'patro_estadistic', 'dificultat', 'domini_semantic', 'render_excel']
+    headers = ['case_id', 'title', 'excel_family', 'excel_subtype', 'data_structure', 'statistic_pattern', 'difficulty', 'semantic_domain', 'excel_render_mode']
     for c, h in enumerate(headers):
         ws.write(0, c, h, fmt_header)
     for r, inst in enumerate(instances, start=1):
         src = inst['source_case']
         ws.write_url(r, 0, f"internal:'{sheet_map[inst['id']]}'!A1", fmt_link, string=inst['id'])
         ws.write(r, 1, inst['title'])
-        ws.write(r, 2, src['familia_excel'])
-        ws.write(r, 3, src['subtipus_excel'])
-        ws.write(r, 4, src['estructura_dades'])
-        ws.write(r, 5, src['patro_estadistic'])
-        ws.write(r, 6, src['dificultat'])
-        ws.write(r, 7, src['domini_semantic'])
+        ws.write(r, 2, src['excel_family'])
+        ws.write(r, 3, src['excel_subtype'])
+        ws.write(r, 4, src['data_structure'])
+        ws.write(r, 5, src['statistic_pattern'])
+        ws.write(r, 6, src['difficulty'])
+        ws.write(r, 7, src['semantic_domain'])
         ws.write(r, 8, inst['chart']['render_mode'])
     ws.freeze_panes(1, 0)
     ws.autofilter(0, 0, len(instances), len(headers) - 1)
@@ -1432,7 +1636,7 @@ def add_summary_sheet(workbook, instances, sheet_map, render_stats):
     ws.set_column('B:B', 55)
     ws.set_column('C:I', 22)
     start = len(instances) + 3
-    ws.write(start, 0, 'Estadístiques de render', fmt_header)
+    ws.write(start, 0, 'Render statistics', fmt_header)
     for i, (k, v) in enumerate(render_stats.items(), start=start + 1):
         ws.write(i, 0, k)
         ws.write(i, 1, v)
@@ -1644,13 +1848,13 @@ def render_long_chart(workbook, ws, formats, inst, sheet_name, start_row, chart_
 
     chart_args = excel_chart_args(inst)
     if not chart_args:
-        return False, 'sense suport exacte'
+        return False, 'no exact support'
     exact_subtypes_unsupported = {'Pie of Pie', 'Bar of Pie', 'Filled Map', 'Contour'}
     if inst['chart']['excel_subtype'] in exact_subtypes_unsupported:
         if inst['chart']['excel_family'] == 'Pie':
             chart_args = {'type': 'pie'}
         else:
-            return False, 'subtipus no suportat exactament'
+            return False, 'subtype not exactly supported'
     chart = workbook.add_chart(chart_args)
     for c_idx, s in enumerate(series, start=1):
         series_kwargs = {
@@ -1692,12 +1896,12 @@ def render_long_chart(workbook, ws, formats, inst, sheet_name, start_row, chart_
     ws.insert_chart(chart_anchor, chart)
     if inst['chart']['excel_family'] == 'Doughnut' and len(series) > 1:
         insert_doughnut_ring_labels(ws, chart_anchor, series)
-    return True, 'render exacte o proper'
+    return True, 'exact or near-exact render'
 
 
 def render_scatter(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     records = inst['data']['source']['values']
-    headers = ['x', 'y', 'grup']
+    headers = ['x', 'y', 'group']
     for c, h in enumerate(headers):
         ws.write(start_row, c, h, formats['header'])
     for r, rec in enumerate(records, start=1):
@@ -1735,15 +1939,17 @@ def render_scatter(workbook, ws, formats, inst, sheet_name, start_row, chart_row
     chart.set_style(inst['xlsxwriter']['style'])
     chart.set_size(inst['xlsxwriter']['size'])
     ws.insert_chart(f'G{chart_row + 1}', chart)
-    return True, 'render exacte'
+    return True, 'exact render'
 
 
 def render_combo(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     records = inst['data']['source']['values']
     categories = list(OrderedDict((r['categoria'], None) for r in records).keys())
-    ws.write_row(start_row, 0, ['Període', 'Primària', 'Secundària'], formats['header'])
+    ws.write_row(start_row, 0, ['Period', 'Primary', 'Secondary'], formats['header'])
     prim = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Primària'}
     sec = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Secundària'}
+    prim = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Primary'} or prim
+    sec = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Secondary'} or sec
     for i, cat in enumerate(categories, start=1):
         ws.write(start_row + i, 0, cat, formats['text'])
         ws.write_number(start_row + i, 1, float(prim[cat]), formats['num'])
@@ -1773,12 +1979,12 @@ def render_combo(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     col_chart.set_style(inst['xlsxwriter']['style'])
     col_chart.set_size(inst['xlsxwriter']['size'])
     ws.insert_chart(f'G{chart_row + 1}', col_chart)
-    return True, 'render exacte (combo)'
+    return True, 'exact render (combo)'
 
 
 def render_stock(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     records = inst['data']['source']['values']
-    headers = ['Data', 'Obertura', 'Màxim', 'Mínim', 'Tancament', 'Volum']
+    headers = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
     ws.write_row(start_row, 0, headers, formats['header'])
     for i, rec in enumerate(records, start=1):
         ws.write(start_row + i, 0, rec['data'], formats['text'])
@@ -1790,14 +1996,14 @@ def render_stock(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     # XlsxWriter exact stock variants are limited; use a close line+column preview.
     line_chart = workbook.add_chart({'type': 'line'})
     line_chart.add_series({
-        'name': 'Tancament',
+        'name': 'Close',
         'categories': [sheet_name, start_row + 1, 0, start_row + len(records), 0],
         'values': [sheet_name, start_row + 1, 4, start_row + len(records), 4],
         **series_style('line', 0),
     })
     vol_chart = workbook.add_chart({'type': 'column'})
     vol_chart.add_series({
-        'name': 'Volum',
+        'name': 'Volume',
         'categories': [sheet_name, start_row + 1, 0, start_row + len(records), 0],
         'values': [sheet_name, start_row + 1, 5, start_row + len(records), 5],
         'y2_axis': True,
@@ -1805,19 +2011,19 @@ def render_stock(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     })
     line_chart.combine(vol_chart)
     line_chart.set_title({'name': inst['title']})
-    line_chart.set_x_axis(excel_axis_options('Data'))
+    line_chart.set_x_axis(excel_axis_options('Date'))
     line_chart.set_y_axis(excel_axis_options(inst['encoding']['y']['title']))
-    line_chart.set_y2_axis(excel_axis_options('Volum'))
+    line_chart.set_y2_axis(excel_axis_options('Volume'))
     apply_legend_for_series_count(line_chart, inst['xlsxwriter']['legend_position'], 2)
     line_chart.set_style(inst['xlsxwriter']['style'])
     line_chart.set_size(inst['xlsxwriter']['size'])
     ws.insert_chart(f'H{chart_row + 1}', line_chart)
-    return True, 'render aproximat (línea + volum)'
+    return True, 'approximate render (line + volume)'
 
 
 def render_map(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     records = inst['data']['source']['values']
-    ws.write_row(start_row, 0, ['Regió', 'Valor'], formats['header'])
+    ws.write_row(start_row, 0, ['Region', 'Value'], formats['header'])
     for i, rec in enumerate(records, start=1):
         ws.write(start_row + i, 0, rec['regio'], formats['text'])
         ws.write_number(start_row + i, 1, rec['valor'], formats['num'])
@@ -1828,14 +2034,14 @@ def render_map(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
         'values': [sheet_name, start_row + 1, 1, start_row + len(records), 1],
         **series_style('bar', 0),
     })
-    chart.set_title({'name': inst['title'] + ' - vista prèvia en barres'})
+    chart.set_title({'name': inst['title'] + ' - bar preview'})
     chart.set_x_axis(excel_axis_options(inst['encoding']['y']['title']))
-    chart.set_y_axis(excel_axis_options('Regió'))
+    chart.set_y_axis(excel_axis_options('Region'))
     chart.set_style(inst['xlsxwriter']['style'])
     chart.set_size(inst['xlsxwriter']['size'])
-    ws.write(start_row - 1, 0, 'Nota: Excel/XlsxWriter no suporta Filled Map; es mostra una vista prèvia en barres.', formats['note'])
+    ws.write(start_row - 1, 0, 'Note: Excel/XlsxWriter does not support Filled Map; a bar-chart preview is shown instead.', formats['note'])
     ws.insert_chart(f'G{chart_row + 1}', chart)
-    return True, 'render aproximat (barres)'
+    return True, 'approximate render (bars)'
 
 
 def render_surface(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
@@ -1856,8 +2062,8 @@ def render_surface(workbook, ws, formats, inst, sheet_name, start_row, chart_row
         'mid_color': '#FFEB84',
         'max_color': '#63BE7B',
     })
-    ws.write(start_row - 1, 0, 'Nota: Excel/XlsxWriter no suporta gràfics Surface/Contour; es mostra la graella amb escala de color.', formats['note'])
-    return True, 'render aproximat (heatmap de cel·les)'
+    ws.write(start_row - 1, 0, 'Note: Excel/XlsxWriter does not support Surface/Contour charts; the grid is shown with a color scale.', formats['note'])
+    return True, 'approximate render (cell heatmap)'
 
 
 def render_instance_sheet(workbook, sheet_name, inst):
@@ -1894,14 +2100,15 @@ def main():
     rows = [clean_row(r) for r in df.to_dict(orient='records')]
     instances = [make_canonical_instance(r) for r in rows]
     sorted_instances = sorted(instances, key=case_sort_key)
+    export_instances = [export_instance(instance) for instance in instances]
 
     with OUT_JSON.open('w', encoding='utf-8') as f:
-        json.dump(instances, f, ensure_ascii=False, indent=2)
+        json.dump(export_instances, f, ensure_ascii=False, indent=2)
 
     workbook = xlsxwriter.Workbook(str(OUT_XLSX))
     used = set()
     sheet_map = {}
-    render_stats = {'exacte': 0, 'aproximat_o_metadades': 0}
+    render_stats = {'exact': 0, 'approximate_or_metadata': 0}
     detail_counts = {}
 
     for inst in sorted_instances:
@@ -1921,13 +2128,13 @@ def main():
         'style_ref': STYLE_REF,
         'render_stats': render_stats,
         'detail_counts': detail_counts,
-        'domains': sorted(df['domini_semantic'].dropna().unique().tolist()),
-        'families': df['familia_excel'].value_counts().to_dict(),
+        'domains': sorted({str(translate_case_value('semantic_domain', row['domini_semantic'])) for row in rows if row.get('domini_semantic') is not None}),
+        'families': dict(OrderedDict((family, sum(1 for row in rows if row.get('familia_excel') == family)) for family in OrderedDict((row.get('familia_excel'), None) for row in rows if row.get('familia_excel') is not None).keys())),
     }
     with OUT_MANIFEST.open('w', encoding='utf-8') as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
 
-    print('Generat:')
+    print('Generated:')
     print(OUT_JSON)
     print(OUT_XLSX)
     print(OUT_MANIFEST)

@@ -4,7 +4,7 @@
 import sys
 sys.path.insert(0, 'src')
 
-from long_descriptions.genera_matriu_cobertura_excel import main
+from long_descriptions.generate_coverage_matrix import main
 
 # Test with 5000 full cases and 500 sample cases
 print("Generating 5000/500 dataset...")

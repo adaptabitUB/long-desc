@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
-"""Clean all generated output files (Excel and CSV)."""
+"""Clean all generated pipeline output files."""
 
 import shutil
 from pathlib import Path
 
 
 def clean_outputs() -> None:
-    """Remove all generated Excel, CSV, JSON, and other output files."""
+    """Remove all generated Excel, CSV, JSON, VBA, and other output files."""
     workspace = Path.cwd()
     
-    # File patterns for generated files (Step 1: genera_matriu_cobertura)
+    output_dir = workspace / "output"
+
+    # Explicit generated filenames at the root plus legacy compatibility patterns.
     patterns = [
+        "coverage_matrix_*.xlsx",
+        "matrix_*.csv",
+        "charts.json",
+        "charts.xlsx",
+        "manifest.json",
+        "statistics_summary.json",
+        "statistics_summary_*.csv",
+        "StatisticsSummaryMacro.bas",
         "matrius_cobertura_excel_*.xlsx",
         "matriu_*.csv",
     ]
@@ -18,15 +28,23 @@ def clean_outputs() -> None:
     deleted_files = []
     deleted_dirs = []
     
-    # Delete files matching patterns
+    # Delete files matching patterns in output/ (and root for backwards compatibility)
     for pattern in patterns:
+        for file_path in output_dir.glob(pattern):
+            if file_path.is_file():
+                file_path.unlink()
+                deleted_files.append(str(file_path.relative_to(workspace)))
         for file_path in workspace.glob(pattern):
             if file_path.is_file():
                 file_path.unlink()
                 deleted_files.append(file_path.name)
     
-    # Delete the entire output directory (Steps 2-4: genera_instancies_canoniques, 
-    # genera_resum_estadistic, genera_macro_vba_resum_estadistic)
+    # Delete the entire output directory (all pipeline steps)
+    if output_dir.exists() and output_dir.is_dir():
+        shutil.rmtree(output_dir)
+        deleted_dirs.append(output_dir.name)
+
+    # Legacy output directory from previous versions
     sortida_dir = workspace / "sortida_instancies_completa"
     if sortida_dir.exists() and sortida_dir.is_dir():
         shutil.rmtree(sortida_dir)

@@ -4,11 +4,10 @@ import time
 from pathlib import Path
 
 from . import (
-    genera_matriu_cobertura,
-    genera_instancies_canoniques,
-    genera_resum_estadistic,
-    genera_macro_vba_resum_estadistic,
-    genera_metriques,
+    generate_coverage_matrix,
+    generate_charts,
+    generate_statistics_summary,
+    generate_macro_vba_statistics_summary,
 )
 
 
@@ -22,48 +21,32 @@ def main() -> None:
     start_time = time.time()
     
     # Step 1: Generate coverage matrix
-    print("[1/5] Running genera_matriu_cobertura...")
+    print("[1/5] Running generate_coverage_matrix...")
     step_start = time.time()
-    genera_matriu_cobertura.main()
+    generate_coverage_matrix.main()
     print(f"✓ Completed in {time.time() - step_start:.2f}s")
     print()
     
     # Step 2: Generate canonical instances
-    print("[2/5] Running genera_instancies_canoniques...")
+    print("[2/5] Running generate_charts...")
     step_start = time.time()
-    genera_instancies_canoniques.main()
+    generate_charts.main()
     print(f"✓ Completed in {time.time() - step_start:.2f}s")
     print()
     
     # Step 3: Generate statistical summary
-    print("[3/5] Running genera_resum_estadistic...")
+    print("[3/5] Running generate_statistics_summary...")
     step_start = time.time()
-    genera_resum_estadistic.main()
+    generate_statistics_summary.main()
     print(f"✓ Completed in {time.time() - step_start:.2f}s")
     print()
     
     # Step 4: Generate VBA macro for statistical summary
-    print("[4/5] Running genera_macro_vba_resum_estadistic...")
+    print("[4/5] Running generate_macro_vba_statistics_summary...")
     step_start = time.time()
-    genera_macro_vba_resum_estadistic.main()
+    generate_macro_vba_statistics_summary.main()
     print(f"✓ Completed in {time.time() - step_start:.2f}s")
     print()
-    
-    # Feature Flag: Step 5 disabled - requires external data files
-    # TODO: Enable when provider data files are available
-    # Requires: long-descriptions/claude/claude_500_casos.xlsx (and other provider files)
-    ENABLE_METRICS_GENERATION = False
-    
-    if ENABLE_METRICS_GENERATION:
-        # Step 5: Generate metrics
-        print("[5/5] Running genera_metriques...")
-        step_start = time.time()
-        genera_metriques.main()
-        print(f"✓ Completed in {time.time() - step_start:.2f}s")
-        print()
-    else:
-        print("[5/5] Skipping genera_metriques (feature disabled - missing provider data files)")
-        print()
     
     total_time = time.time() - start_time
     print("=" * 80)
