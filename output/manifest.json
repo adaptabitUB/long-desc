@@ -1,0 +1,49 @@
+{
+  "input_rows": 500,
+  "json": "output\\charts.json",
+  "xlsx": "output\\charts.xlsx",
+  "style_ref": {
+    "id": "office-custom-theme-pendent-v1",
+    "href": "./styles/office-custom-theme-pendent-v1.json",
+    "description": "Reference pending the final corporate style definition."
+  },
+  "render_stats": {
+    "exact": 487,
+    "approximate_or_metadata": 13
+  },
+  "detail_counts": {
+    "exact or near-exact render": 390,
+    "exact render": 50,
+    "approximate render (line + volume)": 30,
+    "approximate render (cell heatmap)": 3,
+    "exact render (combo)": 27
+  },
+  "domains": [
+    "climate",
+    "demographics",
+    "education",
+    "energy",
+    "finance",
+    "health",
+    "manufacturing",
+    "operations",
+    "sales",
+    "web analytics"
+  ],
+  "families": {
+    "Column": 100,
+    "Bar": 44,
+    "Line": 103,
+    "Pie": 26,
+    "Doughnut": 16,
+    "Area": 22,
+    "Scatter": 50,
+    "Stock": 30,
+    "Surface": 3,
+    "Radar": 11,
+    "Histogram": 38,
+    "Pareto": 15,
+    "Funnel": 15,
+    "Combo": 27
+  }
+}
