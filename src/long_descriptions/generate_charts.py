@@ -354,7 +354,6 @@ DOMAIN_CFG: Dict[str, Dict[str, Any]] = {
             'Public tenders for large contracts'
         ],
         'geo_categories': ['North', 'Central', 'East', 'South', 'Balearic Islands', 'Portugal', 'Canary Islands', 'International'],
-        'series': ['Nord', 'Centre', 'Sud'],
         'series': ['North', 'Central', 'South'],
         'radar_axes': ['Volume', 'Margin', 'Turnover', 'Loyalty', 'Average ticket', 'Conversion', 'Penetration', 'Recurrence'],
         'scatter_x': ('Average discount (%)', 0, 35),
@@ -397,13 +396,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(110.0, 240.0), (140.0, 280.0)],
             'medium': [(70.0, 180.0), (90.0, 210.0)],
-            'alta': [(40.0, 120.0), (55.0, 145.0)],
+            'high': [(40.0, 120.0), (55.0, 145.0)],
             'very high': [(22.0, 80.0), (30.0, 95.0)],
         },
         'map_value_ranges': {
             'low': [(6.5, 12.0), (5.5, 10.5)],
             'medium': [(4.5, 9.0), (3.8, 7.8)],
-            'alta': [(3.0, 6.5), (2.6, 5.5)],
+            'high': [(3.0, 6.5), (2.6, 5.5)],
             'very high': [(2.0, 4.8), (1.8, 4.0)],
         },
     },
@@ -411,13 +410,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(220.0, 950.0), (180.0, 820.0)],
             'medium': [(140.0, 700.0), (110.0, 580.0)],
-            'alta': [(90.0, 460.0), (70.0, 360.0)],
+            'high': [(90.0, 460.0), (70.0, 360.0)],
             'very high': [(45.0, 240.0), (35.0, 190.0)],
         },
         'map_value_ranges': {
             'low': [(220.0, 620.0), (180.0, 520.0)],
             'medium': [(140.0, 420.0), (110.0, 340.0)],
-            'alta': [(80.0, 260.0), (60.0, 220.0)],
+            'high': [(80.0, 260.0), (60.0, 220.0)],
             'very high': [(35.0, 160.0), (25.0, 120.0)],
         },
     },
@@ -425,13 +424,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(80.0, 360.0), (60.0, 280.0)],
             'medium': [(50.0, 240.0), (35.0, 190.0)],
-            'alta': [(25.0, 130.0), (18.0, 100.0)],
+            'high': [(25.0, 130.0), (18.0, 100.0)],
             'very high': [(10.0, 70.0), (8.0, 55.0)],
         },
         'map_value_ranges': {
             'low': [(14.0, 28.0), (11.0, 24.0)],
             'medium': [(9.0, 21.0), (7.0, 17.0)],
-            'alta': [(6.0, 15.0), (4.5, 12.0)],
+            'high': [(6.0, 15.0), (4.5, 12.0)],
             'very high': [(3.0, 9.0), (2.5, 7.5)],
         },
     },
@@ -439,13 +438,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(600.0, 4200.0), (450.0, 3200.0)],
             'medium': [(300.0, 2500.0), (220.0, 1800.0)],
-            'alta': [(140.0, 1200.0), (100.0, 900.0)],
+            'high': [(140.0, 1200.0), (100.0, 900.0)],
             'very high': [(60.0, 520.0), (40.0, 380.0)],
         },
         'map_value_ranges': {
             'low': [(2.0, 8.5), (1.5, 6.5)],
             'medium': [(1.2, 5.8), (0.9, 4.5)],
-            'alta': [(0.7, 3.8), (0.5, 2.8)],
+            'high': [(0.7, 3.8), (0.5, 2.8)],
             'very high': [(0.3, 1.8), (0.2, 1.3)],
         },
     },
@@ -453,13 +452,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(40.0, 240.0), (30.0, 180.0)],
             'medium': [(22.0, 150.0), (16.0, 110.0)],
-            'alta': [(10.0, 85.0), (8.0, 65.0)],
+            'high': [(10.0, 85.0), (8.0, 65.0)],
             'very high': [(4.0, 38.0), (3.0, 28.0)],
         },
         'map_value_ranges': {
             'low': [(60.0, 380.0), (45.0, 300.0)],
             'medium': [(35.0, 220.0), (25.0, 170.0)],
-            'alta': [(18.0, 120.0), (12.0, 90.0)],
+            'high': [(18.0, 120.0), (12.0, 90.0)],
             'very high': [(7.0, 55.0), (5.0, 40.0)],
         },
     },
@@ -467,13 +466,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(45.0, 95.0), (35.0, 85.0)],
             'medium': [(28.0, 78.0), (22.0, 68.0)],
-            'alta': [(16.0, 58.0), (12.0, 48.0)],
+            'high': [(16.0, 58.0), (12.0, 48.0)],
             'very high': [(8.0, 34.0), (6.0, 26.0)],
         },
         'map_value_ranges': {
             'low': [(250.0, 1500.0), (180.0, 1200.0)],
             'medium': [(120.0, 900.0), (90.0, 700.0)],
-            'alta': [(55.0, 420.0), (40.0, 320.0)],
+            'high': [(55.0, 420.0), (40.0, 320.0)],
             'very high': [(12.0, 180.0), (8.0, 130.0)],
         },
     },
@@ -481,13 +480,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(40.0, 240.0), (30.0, 180.0)],
             'medium': [(24.0, 155.0), (18.0, 120.0)],
-            'alta': [(12.0, 82.0), (9.0, 64.0)],
+            'high': [(12.0, 82.0), (9.0, 64.0)],
             'very high': [(5.0, 34.0), (4.0, 26.0)],
         },
         'map_value_ranges': {
             'low': [(50.0, 260.0), (40.0, 210.0)],
             'medium': [(28.0, 170.0), (22.0, 130.0)],
-            'alta': [(14.0, 90.0), (10.0, 70.0)],
+            'high': [(14.0, 90.0), (10.0, 70.0)],
             'very high': [(6.0, 40.0), (4.0, 28.0)],
         },
     },
@@ -495,13 +494,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(24.0, 180.0), (18.0, 140.0)],
             'medium': [(14.0, 110.0), (10.0, 82.0)],
-            'alta': [(7.0, 56.0), (5.0, 42.0)],
+            'high': [(7.0, 56.0), (5.0, 42.0)],
             'very high': [(3.0, 24.0), (2.0, 18.0)],
         },
         'map_value_ranges': {
             'low': [(90.0, 99.0), (86.0, 97.0)],
             'medium': [(82.0, 96.0), (78.0, 94.0)],
-            'alta': [(74.0, 92.0), (70.0, 88.0)],
+            'high': [(74.0, 92.0), (70.0, 88.0)],
             'very high': [(66.0, 84.0), (62.0, 80.0)],
         },
     },
@@ -509,13 +508,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(60.0, 380.0), (45.0, 290.0)],
             'medium': [(35.0, 220.0), (25.0, 170.0)],
-            'alta': [(18.0, 120.0), (12.0, 90.0)],
+            'high': [(18.0, 120.0), (12.0, 90.0)],
             'very high': [(7.0, 55.0), (5.0, 42.0)],
         },
         'map_value_ranges': {
             'low': [(35.0, 140.0), (28.0, 120.0)],
             'medium': [(22.0, 100.0), (16.0, 80.0)],
-            'alta': [(12.0, 60.0), (9.0, 46.0)],
+            'high': [(12.0, 60.0), (9.0, 46.0)],
             'very high': [(5.0, 28.0), (4.0, 22.0)],
         },
     },
@@ -523,13 +522,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(25.0, 180.0), (18.0, 140.0)],
             'medium': [(14.0, 105.0), (10.0, 82.0)],
-            'alta': [(7.0, 56.0), (5.0, 44.0)],
+            'high': [(7.0, 56.0), (5.0, 44.0)],
             'very high': [(3.0, 26.0), (2.0, 18.0)],
         },
         'map_value_ranges': {
             'low': [(650.0, 1600.0), (500.0, 1350.0)],
             'medium': [(380.0, 1200.0), (300.0, 920.0)],
-            'alta': [(180.0, 720.0), (140.0, 560.0)],
+            'high': [(180.0, 720.0), (140.0, 560.0)],
             'very high': [(80.0, 340.0), (60.0, 250.0)],
         },
     },
@@ -537,13 +536,13 @@ DOMAIN_VALUE_RANGE_CFG: Dict[str, Dict[str, Dict[str, List[Tuple[float, float]]]
         'category_value_ranges': {
             'low': [(140.0, 900.0), (100.0, 700.0)],
             'medium': [(80.0, 560.0), (60.0, 420.0)],
-            'alta': [(35.0, 260.0), (25.0, 190.0)],
+            'high': [(35.0, 260.0), (25.0, 190.0)],
             'very high': [(12.0, 110.0), (8.0, 80.0)],
         },
         'map_value_ranges': {
             'low': [(90.0, 450.0), (70.0, 360.0)],
             'medium': [(55.0, 260.0), (40.0, 210.0)],
-            'alta': [(24.0, 130.0), (18.0, 95.0)],
+            'high': [(24.0, 130.0), (18.0, 95.0)],
             'very high': [(8.0, 55.0), (6.0, 40.0)],
         },
     },
@@ -634,203 +633,6 @@ def clean_row(row: Dict[str, Any]) -> Dict[str, Any]:
             out[k] = v
 
     return out
-
-
-SOURCE_CASE_KEY_MAP = {
-    'Excel_family': 'excel_family',
-    'subtype_excel': 'excel_subtype',
-    'style_varian': 'style_variant',
-    'quote_subtype_5000': 'quota_subtype_5000',
-    'quote_subtype_500': 'quota_subtype_500',
-    'codi_subtipus': 'code_subtype',
-    'familia_excel': 'excel_family',
-    'subtipus_excel': 'excel_subtype',
-    'estructura_dades': 'data_structure',
-    'patro_estadistic': 'statistic_pattern',
-    'domini_semantic': 'semantic_domain',
-    'dificultat': 'difficulty',
-}
-
-DIFFICULTY_OUTPUT_MAP = {
-    'baixa': 'low',
-    'mitjana': 'medium',
-    'alta': 'high',
-    'molt alta': 'very high',
-}
-
-DOMAIN_OUTPUT_MAP = {
-    'vendes': 'sales',
-    'salut': 'health',
-    'educació': 'education',
-    'demografia': 'demographics',
-    'operacions': 'operations',
-    'energia': 'energy',
-    'finances': 'finance',
-    'manufactura': 'manufacturing',
-    'clima': 'climate',
-    'geografia': 'geography',
-    'web analytics': 'web analytics',
-}
-
-STRUCTURE_OUTPUT_MAP = {
-    'categòric simple': 'simple categorical',
-    'categòric multiserie': 'multi-series categorical',
-    'categòric amb etiquetes llargues': 'categorical with long labels',
-    'categòric ordenat': 'ordered categorical',
-    'categòric ordenat + acumulat': 'ordered categorical + cumulative',
-    'sèrie temporal': 'time series',
-    'sèrie temporal discreta': 'discrete time series',
-    'multiserie temporal': 'multi-series temporal',
-    'multiserie temporal acumulada': 'cumulative multi-series temporal',
-    'parts del tot simple': 'simple part-of-whole',
-    'parts del tot amb cua llarga': 'part-of-whole with long tail',
-    'parts del tot multianell': 'multi-ring part-of-whole',
-    'bivariant numèrica': 'numeric bivariate',
-    'OHLC temporal': 'temporal OHLC',
-    'graella numèrica 2D': '2D numeric grid',
-    'multivariable sobre eixos comuns': 'multivariable on common axes',
-    'distribució univariant': 'univariate distribution',
-    'procés per etapes': 'stage-by-stage process',
-    'multiserie mixta': 'mixed multi-series',
-    'temporal amb eix secundari': 'temporal with secondary axis',
-    'geogràfica': 'geographic',
-}
-
-PATTERN_OUTPUT_MAP = {
-    'diferències clares': 'clear differences',
-    'valors molt propers': 'very close values',
-    'cua llarga': 'long tail',
-    'pic local': 'local peak',
-    'valors negatius': 'negative values',
-    'creixement': 'growth',
-    'decreixement': 'decline',
-    'estacionalitat': 'seasonality',
-    'canvi de règim': 'regime change',
-    'soroll alt': 'high noise',
-    'pic sobtat': 'sudden spike',
-    'vall sobtada': 'sudden valley',
-    'parts equilibrades': 'balanced parts',
-    'part dominant': 'dominant part',
-    'segments molt propers': 'very close segments',
-    'acumulació creixent': 'growing accumulation',
-    'correlació positiva': 'positive correlation',
-    'correlació negativa': 'negative correlation',
-    'correlació nul·la': 'no correlation',
-    'outlier clar': 'clear outlier',
-    'clústers': 'clusters',
-    'relació corba': 'curved relationship',
-    'alta volatilitat': 'high volatility',
-    'baixa volatilitat': 'low volatility',
-    'tendència alcista': 'upward trend',
-    'tendència baixista': 'downward trend',
-    'gap puntual': 'single gap',
-    'superfície suau': 'smooth surface',
-    'superfície rugosa': 'rough surface',
-    'pic central': 'central peak',
-    'doble pic': 'double peak',
-    'gradient diagonal': 'diagonal gradient',
-    'perfil equilibrat': 'balanced profile',
-    'perfil espigat': 'spiky profile',
-    'dues sèries contrastades': 'two contrasting series',
-    'una dimensió dominant': 'one dominant dimension',
-    'simètrica': 'symmetric',
-    'asimètrica': 'asymmetric',
-    'bimodal': 'bimodal',
-    '80/20 marcat': 'clear 80/20',
-    'concentració moderada': 'moderate concentration',
-    'concentració forta': 'strong concentration',
-    'caiguda uniforme': 'uniform drop',
-    'bottleneck clar': 'clear bottleneck',
-    'caiguda tardana': 'late drop',
-    'caiguda inicial forta': 'strong initial drop',
-    'creixement amb taxa': 'growth with rate',
-    'volum i percentatge': 'volume and percentage',
-    'dues escales diferents': 'two different scales',
-    'sèrie principal + objectiu': 'main series + target',
-}
-
-RECORD_FIELD_MAP = {
-    'categoria': 'category',
-    'serie': 'series',
-    'valor': 'value',
-    'regio': 'region',
-    'grup': 'group',
-    'data': 'date',
-    'obertura': 'open',
-    'maxim': 'high',
-    'minim': 'low',
-    'tancament': 'close',
-    'volum': 'volume',
-    'eix': 'axis',
-}
-
-
-def translate_case_value(key: str, value: Any) -> Any:
-    if value is None:
-        return None
-    text = str(value).strip().lower()
-    if key == 'difficulty':
-        return DIFFICULTY_OUTPUT_MAP.get(text, value)
-    if key == 'semantic_domain':
-        return DOMAIN_OUTPUT_MAP.get(text, value)
-    if key == 'data_structure':
-        return STRUCTURE_OUTPUT_MAP.get(text, value)
-    if key == 'statistic_pattern':
-        return PATTERN_OUTPUT_MAP.get(text, value)
-    if key == 'question_template':
-        return str(value).replace('{element_objetiu}', '{target_element}')
-    return value
-
-
-def translate_source_case(row: Dict[str, Any]) -> Dict[str, Any]:
-    translated: Dict[str, Any] = {}
-    for key, value in row.items():
-        english_key = SOURCE_CASE_KEY_MAP.get(key, key)
-        translated[english_key] = translate_case_value(english_key, value)
-    return translated
-
-
-def translate_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    translated_records: List[Dict[str, Any]] = []
-    for record in records:
-        translated_records.append({RECORD_FIELD_MAP.get(key, key): value for key, value in record.items()})
-    return translated_records
-
-
-def translate_encoding(encoding: Dict[str, Any]) -> Dict[str, Any]:
-    translated: Dict[str, Any] = {}
-    for channel, spec in encoding.items():
-        translated[channel] = {
-            **spec,
-            'field': RECORD_FIELD_MAP.get(spec.get('field'), spec.get('field')),
-        }
-    return translated
-
-
-def translate_axes(axes: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
-    translated: Dict[str, Dict[str, Any]] = {}
-    for axis_name, axis in axes.items():
-        translated[axis_name] = {
-            **axis,
-            'field': RECORD_FIELD_MAP.get(axis.get('field'), axis.get('field')),
-        }
-    return translated
-
-
-def export_instance(instance: Dict[str, Any]) -> Dict[str, Any]:
-    data = instance.get('data', {})
-    source = data.get('source', {})
-    exported = dict(instance)
-    exported['data'] = {
-        **data,
-        'source': {
-            **source,
-            'values': translate_records(source.get('values', [])),
-        },
-    }
-    exported['encoding'] = translate_encoding(instance.get('encoding', {}))
-    exported['axes'] = translate_axes(instance.get('axes', {}))
-    return exported
 
 
 def choose_categories(cfg: Dict[str, Any], structure: str, count: int) -> List[str]:
@@ -1286,13 +1088,13 @@ def radar_series_profile(cats: List[str], pattern: str, series_index: int, serie
         circular_distance = min((idx - dominant_idx) % n, (dominant_idx - idx) % n)
         proximity = 1.0 - (circular_distance / max(1, n // 2))
 
-        if pattern == 'perfil equilibrat':
+        if pattern == 'balanced profile':
             value = 62 + 6 * math.sin((idx + series_index) * 0.9) + rnd.uniform(-4, 4)
-        elif pattern == 'perfil espigat':
+        elif pattern == 'spiky profile':
             value = 34 + 52 * max(0.0, proximity) + rnd.uniform(-5, 5)
-        elif pattern == 'una dimensió dominant':
+        elif pattern == 'one dominant dimension':
             value = 42 + 38 * max(0.0, proximity) + rnd.uniform(-4, 4)
-        elif pattern == 'dues sèries contrastades':
+        elif pattern == 'two contrasting series':
             if idx == dominant_idx:
                 value = 86 + rnd.uniform(-3, 3)
             elif idx == opposite_idx:
@@ -1302,7 +1104,7 @@ def radar_series_profile(cats: List[str], pattern: str, series_index: int, serie
         else:
             value = 50 + 24 * max(0.0, proximity) + 10 * math.sin((idx + series_index) * 0.8) + rnd.uniform(-6, 6)
 
-        if idx == secondary_idx and pattern in {'perfil espigat', 'una dimensió dominant'}:
+        if idx == secondary_idx and pattern in {'spiky profile', 'one dominant dimension'}:
             value += 8
         values.append(round(min(100, max(0, value)), 1))
     return values
@@ -1500,7 +1302,15 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     title = title_for(row, cfg, meta)
-    source_case = translate_source_case(row)
+    source_case = dict(row)
+    source_case['excel_family'] = row['Excel_family']
+    source_case['excel_subtype'] = row['subtype_excel']
+    source_case['style_variant'] = row.get('style_variant', row.get('style_varian'))
+    source_case['quota_subtype_5000'] = row.get('quote_subtype_5000')
+    source_case['quota_subtype_500'] = row.get('quote_subtype_500')
+    question_template = source_case.get('question_template')
+    if question_template is not None:
+        source_case['question_template'] = str(question_template).replace('{element_objetiu}', '{target_element}')
 
     exact_excel_supported = family not in {'Map', 'Surface'} and row['subtype_excel'] not in {'Pie of Pie', 'Bar of Pie', 'Filled Map', 'Contour'}
     render_mode = 'exact' if exact_excel_supported else 'approximate_or_metadata'
@@ -1519,7 +1329,7 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
         'version': '1.0-exploratory',
         'id': row['case_id'],
         'title': title,
-        'description': f"Synthetic canonical instance for the {row['subtipus_excel']} chart in the {source_case['semantic_domain']} domain.",
+        'description': f"Synthetic canonical instance for the {row['subtype_excel']} chart in the {source_case['semantic_domain']} domain.",
         'style_ref': STYLE_REF,
         'source_case': source_case,
         'data': {
@@ -1531,7 +1341,7 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
             'format': data_format,
         },
         'chart': {
-            'family': row['familia_excel'].lower(),
+            'family': row['Excel_family'].lower(),
             'excel_family': row['Excel_family'],
             'excel_subtype': row['subtype_excel'],
             'excel_subtype_code': row['code_subtype'],
@@ -1670,6 +1480,15 @@ def excel_chart_args(inst):
         args = {'type': 'scatter'}
     elif fam == 'Radar':
         args = {'type': 'radar'}
+    elif fam == 'Histogram':
+        # XlsxWriter doesn't expose Excel histogram charts directly; use columns.
+        args = {'type': 'column'}
+    elif fam == 'Pareto':
+        # Render as columns so the sheet always includes a visible chart.
+        args = {'type': 'column'}
+    elif fam == 'Funnel':
+        # XlsxWriter has no funnel chart type; use horizontal bars as approximation.
+        args = {'type': 'bar'}
     else:
         return None
     args['has_markers'] = False
@@ -1883,13 +1702,19 @@ def render_long_chart(workbook, ws, formats, inst, sheet_name, start_row, chart_
         chart.set_legend({'none': True})
     else:
         apply_legend_for_series_count(chart, inst['xlsxwriter']['legend_position'], len(series))
+        is_bar_family = inst['chart']['excel_family'] == 'Bar'
+        x_axis_extra: Dict[str, Any] = {}
         y_axis_extra: Dict[str, Any] = {}
         if inst['chart']['stack_mode'] == 'percent':
-            y_axis_extra['min'] = 0
-            y_axis_extra['max'] = 1
-            y_axis_extra['num_format'] = '0%'
-        chart.set_x_axis(excel_axis_options(inst['encoding']['x']['title']))
-        chart.set_y_axis(excel_axis_options(inst['encoding']['y']['title'], y_axis_extra))
+            value_axis_extra = x_axis_extra if is_bar_family else y_axis_extra
+            value_axis_extra['min'] = 0
+            value_axis_extra['max'] = 1
+            value_axis_extra['num_format'] = '0%'
+
+        x_axis_title = inst['encoding']['y']['title'] if is_bar_family else inst['encoding']['x']['title']
+        y_axis_title = inst['encoding']['x']['title'] if is_bar_family else inst['encoding']['y']['title']
+        chart.set_x_axis(excel_axis_options(x_axis_title, x_axis_extra))
+        chart.set_y_axis(excel_axis_options(y_axis_title, y_axis_extra))
     chart.set_style(inst['xlsxwriter']['style'])
     chart.set_size(inst['xlsxwriter']['size'])
     chart_anchor = f'G{chart_row + 1}'
@@ -1946,10 +1771,8 @@ def render_combo(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
     records = inst['data']['source']['values']
     categories = list(OrderedDict((r['categoria'], None) for r in records).keys())
     ws.write_row(start_row, 0, ['Period', 'Primary', 'Secondary'], formats['header'])
-    prim = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Primària'}
-    sec = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Secundària'}
-    prim = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Primary'} or prim
-    sec = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Secondary'} or sec
+    prim = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Primary'}
+    sec = {r['categoria']: r['valor'] for r in records if r['serie'] == 'Secondary'}
     for i, cat in enumerate(categories, start=1):
         ws.write(start_row + i, 0, cat, formats['text'])
         ws.write_number(start_row + i, 1, float(prim[cat]), formats['num'])
@@ -2100,7 +1923,7 @@ def main():
     rows = [clean_row(r) for r in df.to_dict(orient='records')]
     instances = [make_canonical_instance(r) for r in rows]
     sorted_instances = sorted(instances, key=case_sort_key)
-    export_instances = [export_instance(instance) for instance in instances]
+    export_instances = instances
 
     with OUT_JSON.open('w', encoding='utf-8') as f:
         json.dump(export_instances, f, ensure_ascii=False, indent=2)
@@ -2128,8 +1951,8 @@ def main():
         'style_ref': STYLE_REF,
         'render_stats': render_stats,
         'detail_counts': detail_counts,
-        'domains': sorted({str(translate_case_value('semantic_domain', row['domini_semantic'])) for row in rows if row.get('domini_semantic') is not None}),
-        'families': dict(OrderedDict((family, sum(1 for row in rows if row.get('familia_excel') == family)) for family in OrderedDict((row.get('familia_excel'), None) for row in rows if row.get('familia_excel') is not None).keys())),
+        'domains': sorted({str(row['semantic_domain']) for row in rows if row.get('semantic_domain') is not None}),
+        'families': dict(OrderedDict((family, sum(1 for row in rows if row.get('Excel_family') == family)) for family in OrderedDict((row.get('Excel_family'), None) for row in rows if row.get('Excel_family') is not None).keys())),
     }
     with OUT_MANIFEST.open('w', encoding='utf-8') as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)

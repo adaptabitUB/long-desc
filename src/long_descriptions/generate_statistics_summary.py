@@ -31,7 +31,7 @@ def extract_categories(instance: Dict[str, Any]) -> List[Any]:
 	if x_field:
 		return unique_in_order([row.get(x_field) for row in records if row.get(x_field) is not None])
 
-	for candidate in ("category", "region", "date", "categoria", "regio", "data"):
+	for candidate in ("category", "region", "date"):
 		if candidate in records[0]:
 			return unique_in_order([row.get(candidate) for row in records if row.get(candidate) is not None])
 
@@ -48,7 +48,7 @@ def extract_series(instance: Dict[str, Any]) -> List[Any]:
 	if color_field:
 		return unique_in_order([row.get(color_field) for row in records if row.get(color_field) is not None])
 
-	for candidate in ("series", "group", "serie", "grup"):
+	for candidate in ("series", "group"):
 		if candidate in records[0]:
 			return unique_in_order([row.get(candidate) for row in records if row.get(candidate) is not None])
 
@@ -71,7 +71,7 @@ def extract_axes(instance: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
 			"min": axis.get("min"),
 			"max": axis.get("max"),
 			"interval": axis.get("interval"),
-			"unit": axis.get("unit") or axis.get("unitat"),
+			"unit": axis.get("unit"),
 		}
 
 	return result
@@ -96,7 +96,7 @@ def detect_value_field(instance: Dict[str, Any], records: List[Dict[str, Any]]) 
 	if field_from_encoding:
 		return field_from_encoding
 
-	for field in ("value", "y", "close", "valor", "tancament"):
+	for field in ("value", "y", "close"):
 		if field in records[0]:
 			return field
 
@@ -359,13 +359,13 @@ def build_numeric_summary(instance: Dict[str, Any]) -> Dict[str, Any]:
 	value_field = detect_value_field(instance, records)
 
 	if not category_field:
-		for candidate in ("category", "region", "date", "categoria", "regio", "data"):
+		for candidate in ("category", "region", "date"):
 			if candidate in records[0]:
 				category_field = candidate
 				break
 
 	if not series_field:
-		for candidate in ("series", "group", "serie", "grup"):
+		for candidate in ("series", "group"):
 			if candidate in records[0]:
 				series_field = candidate
 				break
