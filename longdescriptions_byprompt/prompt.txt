@@ -1,0 +1,21 @@
+Act as a specialist in accessibility and data visualisation. Write 50 accessible, complete textual descriptions in English that functions as a long alternative text (long description) for the charts. The description must allow the charts to be fully understood without seeing it, prioritising meaning, interpretation, and communicative purpose, rather than the mere enumeration of data. 
+
+Input information
+Use only the data from the 50 charts described in the attached JSON file.
+
+The alternative text must explicitly include: a) the type of chart (b) the purpose of the chart (usually indicated by the title), (c) the information represented on the axes, (d) an evaluation of the most representative values: minimum value maximum value average value (when available) Mandatory writing sequence Follow this order strictly, without alteration: 1. Overview and main message Explain what the chart shows and the main idea or conclusion it communicates. 
+
+Chart structure.
+Describe: (a) the type of chart, (b) the variables represented, and (c) the content of the X and Y axes (including categories and ranges where relevant) 
+
+Relevant patterns, trends, and comparisons.
+Present no more than three main patterns, such as: differences between categories, significant contrasts, stability or variability, notable concentrations.
+
+Essential key details.
+Include only when relevant: maximum values, minimum values, average values, key milestones necessary to understand the chart's message. Avoid exhaustive listings. Format and structure Use clear headings for each section. Write in concise, coherent, and well-structured paragraphs Organise the text into clearly identifiable blocks, suitable for: screen readers and braille displays. The description must be self-contained and understandable on its own.
+
+Constraints and quality criteria
+Prioritise meaning and interpretation, not visual appearance. Do not describe colours, shapes, or spatial positions without explaining their informational function. Do not use implicit visual references ("as seen", "on the left", etc.) Keep the length sufficient to convey meaning while avoiding: cognitive overload redundancy. Use clear, precise, and unambiguous language, appropriate to the intended. Do not assume prior visual knowledge.
+
+Final check (internal, do not display)
+Before delivering the description, ensure that it: (a) follows the sequence: overview > structure > patterns > details, (b) clearly conveys the main message of the chart, (c) does not rely on visual references, and (d) ensures each section adds new, non-redundant information.
