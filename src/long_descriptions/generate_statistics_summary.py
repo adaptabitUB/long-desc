@@ -13,7 +13,7 @@ from typing import Any, Dict, List
 BASE_DIR = Path.cwd()
 OUTPUT_ROOT = BASE_DIR / "output"
 INPUT_JSON = OUTPUT_ROOT / "charts.json"
-OUTPUT_CSV_DIR = OUTPUT_ROOT
+OUTPUT_CSV_DIR = OUTPUT_ROOT / "statistics"
 
 
 def unique_in_order(values: List[Any]) -> List[Any]:

@@ -24,6 +24,8 @@ def clean_outputs() -> None:
         "matrius_cobertura_excel_*.xlsx",
         "matriu_*.csv",
     ]
+
+    statistics_dir = output_dir / "statistics"
     
     deleted_files = []
     deleted_dirs = []
@@ -38,6 +40,12 @@ def clean_outputs() -> None:
             if file_path.is_file():
                 file_path.unlink()
                 deleted_files.append(file_path.name)
+
+    if statistics_dir.exists() and statistics_dir.is_dir():
+        for file_path in statistics_dir.glob("statistics_summary_*.csv"):
+            if file_path.is_file():
+                file_path.unlink()
+                deleted_files.append(str(file_path.relative_to(workspace)))
     
     # Delete the entire output directory (all pipeline steps)
     if output_dir.exists() and output_dir.is_dir():

@@ -166,7 +166,8 @@ uv run ruff format .
     ├── charts.json
     ├── charts.xlsx
     ├── manifest.json
-    ├── statistics_summary_*.csv
     ├── StatisticsSummaryMacro.bas
+    ├── statistics/
+    │   └── statistics_summary_*.csv
     └── metriques/
 ```
