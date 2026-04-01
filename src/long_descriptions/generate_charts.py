@@ -18,6 +18,13 @@ OUT_JSON = OUTPUT_ROOT / 'charts.json'
 OUT_XLSX = OUTPUT_ROOT / 'charts.xlsx'
 OUT_MANIFEST = OUTPUT_ROOT / 'manifest.json'
 
+DEFAULT_DATA_SOURCE = "Synthetic data generated for research and testing purposes."
+DEFAULT_CHART_SIZE = {'width': 1400, 'height': 820}
+DOC_FONT_NAME = 'Arial'
+DOC_FONT_SIZE = 12
+DOC_TITLE_FONT_SIZE = 14
+DOC_SMALL_FONT_SIZE = 11
+
 STYLE_REF = {
     'id': 'office-custom-theme-pendent-v1',
     'href': './styles/office-custom-theme-pendent-v1.json',
@@ -31,14 +38,14 @@ REGIONS_CAT = ['High Pyrenees', 'Western Plains', 'Tarragona Camp', 'Metropolita
 
 # Accessible visual constants prepared for future pattern-based rendering.
 ACCESSIBLE_COLOR_PALETTE: List[str] = [
-    '#4472C4',
-    '#C0504D',
-    '#9BBB59',
-    '#8064A2',
-    '#4BACC6',
-    '#F79646',
-    '#7F7F7F',
-    '#1F4E78',
+    '#377eb8',
+    '#4daf4a',
+    '#e41a1c',
+    '#984ea3',
+    '#ff7f00',
+    '#ffff33',
+    '#a65628',
+    '#f781bf',
 ]
 
 ACCESSIBLE_PATTERN_PALETTE: List[Dict[str, str]] = [
@@ -53,14 +60,14 @@ ACCESSIBLE_PATTERN_PALETTE: List[Dict[str, str]] = [
 ]
 
 ACCESSIBLE_SERIES_STYLE_TABLE: List[Dict[str, str]] = [
-    {'series_slot': '1', 'color': '#4472C4', 'pattern_id': 'P1'},
-    {'series_slot': '2', 'color': '#C0504D', 'pattern_id': 'P2'},
-    {'series_slot': '3', 'color': '#9BBB59', 'pattern_id': 'P3'},
-    {'series_slot': '4', 'color': '#8064A2', 'pattern_id': 'P4'},
-    {'series_slot': '5', 'color': '#4BACC6', 'pattern_id': 'P5'},
-    {'series_slot': '6', 'color': '#F79646', 'pattern_id': 'P6'},
-    {'series_slot': '7', 'color': '#7F7F7F', 'pattern_id': 'P7'},
-    {'series_slot': '8', 'color': '#1F4E78', 'pattern_id': 'P8'},
+    {'series_slot': '1', 'color': '#377eb8', 'pattern_id': 'P1'},
+    {'series_slot': '2', 'color': '#4daf4a', 'pattern_id': 'P2'},
+    {'series_slot': '3', 'color': '#e41a1c', 'pattern_id': 'P3'},
+    {'series_slot': '4', 'color': '#984ea3', 'pattern_id': 'P4'},
+    {'series_slot': '5', 'color': '#ff7f00', 'pattern_id': 'P5'},
+    {'series_slot': '6', 'color': '#ffff33', 'pattern_id': 'P6'},
+    {'series_slot': '7', 'color': '#a65628', 'pattern_id': 'P7'},
+    {'series_slot': '8', 'color': '#f781bf', 'pattern_id': 'P8'},
 ]
 
 ACCESSIBLE_LINE_MARKER_TABLE: List[Dict[str, str]] = [
@@ -1339,6 +1346,7 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
             'semantic_domain': source_case['semantic_domain'],
             'unit': meta['unit'],
             'format': data_format,
+            'data_source': DEFAULT_DATA_SOURCE,
         },
         'chart': {
             'family': row['Excel_family'].lower(),
@@ -1361,7 +1369,7 @@ def make_canonical_instance(row: Dict[str, Any]) -> Dict[str, Any]:
         'xlsxwriter': {
             'style': 10,
             'legend_position': 'bottom',
-            'size': {'width': 640, 'height': 360},
+            'size': dict(DEFAULT_CHART_SIZE),
             'render_mode': render_mode,
         },
     }
@@ -1413,6 +1421,8 @@ def add_metadata(ws, formats, inst, sheet_name):
             (f'Axis {axis_label} - Interval', axis.get('interval')),
             (f'Axis {axis_label} - Unit', axis.get('unit')),
         ])
+
+    meta_rows.append(('Data source', inst.get('data', {}).get('data_source', DEFAULT_DATA_SOURCE)))
 
     r = 2
     for k, v in meta_rows:
@@ -1579,7 +1589,10 @@ def series_style(
 
 def apply_legend_for_series_count(chart, legend_position: str, series_count: int) -> None:
     if series_count > 1:
-        chart.set_legend({'position': legend_position})
+        chart.set_legend({
+            'position': legend_position,
+            'font': {'name': DOC_FONT_NAME, 'size': DOC_FONT_SIZE},
+        })
     else:
         chart.set_legend({'none': True})
 
@@ -1588,12 +1601,19 @@ def excel_axis_options(name: str, extra: Dict[str, Any] | None = None) -> Dict[s
     axis = {
         'name': name,
         'label_position': 'next_to',
-        'num_font': {'rotation': 0},
-        'name_font': {'rotation': 0},
+        'num_font': {'rotation': 0, 'name': DOC_FONT_NAME, 'size': DOC_FONT_SIZE},
+        'name_font': {'rotation': 0, 'name': DOC_FONT_NAME, 'size': DOC_FONT_SIZE, 'bold': False},
     }
     if extra:
         axis.update(extra)
     return axis
+
+
+def chart_title_options(title: str) -> Dict[str, Any]:
+    return {
+        'name': title,
+        'name_font': {'name': DOC_FONT_NAME, 'size': DOC_TITLE_FONT_SIZE, 'bold': True},
+    }
 
 
 def point_styles_for_categories(count: int) -> List[Dict[str, Any]]:
@@ -1643,9 +1663,9 @@ def insert_doughnut_ring_labels(ws, anchor_cell: str, series: List[str]) -> None
                 'x_offset': 235,
                 'y_offset': y_offsets[idx],
                 'width': 118,
-                'height': 22,
-                'font': {'bold': True, 'color': '#404040', 'size': 10},
-                'align': {'vertical': 'middle', 'horizontal': 'center'},
+                'height': 28,
+                'font': {'bold': True, 'color': '#404040', 'size': DOC_FONT_SIZE, 'name': DOC_FONT_NAME},
+                'align': {'vertical': 'middle', 'horizontal': 'left'},
                 'fill': {'none': True},
                 'line': {'none': True},
             },
@@ -1697,7 +1717,7 @@ def render_long_chart(workbook, ws, formats, inst, sheet_name, start_row, chart_
             else:
                 series_kwargs['data_labels'] = data_label_options(chart_args['type'])
         chart.add_series(series_kwargs)
-    chart.set_title({'name': inst['title']})
+    chart.set_title(chart_title_options(inst['title']))
     if inst['chart']['excel_family'] in {'Pie', 'Doughnut'}:
         chart.set_legend({'none': True})
     else:
@@ -1757,7 +1777,7 @@ def render_scatter(workbook, ws, formats, inst, sheet_name, start_row, chart_row
             'values': [sheet_name, start_row + 1, helper_col + 1, start_row + idx - 1, helper_col + 1],
             **series_style('scatter', groups.index(grp)),
         })
-    chart.set_title({'name': inst['title']})
+    chart.set_title(chart_title_options(inst['title']))
     chart.set_x_axis(excel_axis_options(inst['encoding']['x']['title']))
     chart.set_y_axis(excel_axis_options(inst['encoding']['y']['title']))
     apply_legend_for_series_count(chart, inst['xlsxwriter']['legend_position'], len(groups))
@@ -1794,7 +1814,7 @@ def render_combo(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
         **series_style('line', 1),
     })
     col_chart.combine(line_chart)
-    col_chart.set_title({'name': inst['title']})
+    col_chart.set_title(chart_title_options(inst['title']))
     col_chart.set_x_axis(excel_axis_options(inst['encoding']['x']['title']))
     col_chart.set_y_axis(excel_axis_options(inst['encoding']['y']['title']))
     col_chart.set_y2_axis(excel_axis_options(inst['encoding']['secondary_y']['title']))
@@ -1833,7 +1853,7 @@ def render_stock(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
         **series_style('column', 1),
     })
     line_chart.combine(vol_chart)
-    line_chart.set_title({'name': inst['title']})
+    line_chart.set_title(chart_title_options(inst['title']))
     line_chart.set_x_axis(excel_axis_options('Date'))
     line_chart.set_y_axis(excel_axis_options(inst['encoding']['y']['title']))
     line_chart.set_y2_axis(excel_axis_options('Volume'))
@@ -1857,7 +1877,7 @@ def render_map(workbook, ws, formats, inst, sheet_name, start_row, chart_row):
         'values': [sheet_name, start_row + 1, 1, start_row + len(records), 1],
         **series_style('bar', 0),
     })
-    chart.set_title({'name': inst['title'] + ' - bar preview'})
+    chart.set_title(chart_title_options(inst['title'] + ' - bar preview'))
     chart.set_x_axis(excel_axis_options(inst['encoding']['y']['title']))
     chart.set_y_axis(excel_axis_options('Region'))
     chart.set_style(inst['xlsxwriter']['style'])
@@ -1891,17 +1911,23 @@ def render_surface(workbook, ws, formats, inst, sheet_name, start_row, chart_row
 
 def render_instance_sheet(workbook, sheet_name, inst):
     ws = workbook.add_worksheet(sheet_name)
+    ws.set_landscape()
+    ws.set_paper(9)
+    ws.fit_to_pages(1, 1)
+    ws.center_horizontally()
+    ws.set_margins(left=0.4, right=0.4, top=0.5, bottom=0.5)
     formats = {
-        'title': workbook.add_format({'bold': True, 'font_size': 14}),
-        'label': workbook.add_format({'bold': True, 'bg_color': '#D9E2F3'}),
-        'text': workbook.add_format({'text_wrap': True}),
-        'header': workbook.add_format({'bold': True, 'bg_color': '#D9E2F3', 'border': 1}),
-        'num': workbook.add_format({'num_format': '0.0'}),
-        'note': workbook.add_format({'italic': True, 'font_color': '#666666'}),
+        'title': workbook.add_format({'bold': True, 'font_size': DOC_TITLE_FONT_SIZE, 'font_name': DOC_FONT_NAME, 'align': 'left'}),
+        'label': workbook.add_format({'bold': True, 'bg_color': '#D9E2F3', 'font_name': DOC_FONT_NAME, 'font_size': DOC_FONT_SIZE, 'align': 'left', 'valign': 'top'}),
+        'text': workbook.add_format({'text_wrap': True, 'font_name': DOC_FONT_NAME, 'font_size': DOC_FONT_SIZE, 'align': 'left', 'valign': 'top'}),
+        'header': workbook.add_format({'bold': True, 'bg_color': '#D9E2F3', 'border': 1, 'font_name': DOC_FONT_NAME, 'font_size': DOC_FONT_SIZE, 'align': 'left', 'valign': 'top'}),
+        'num': workbook.add_format({'num_format': '0.0', 'font_name': DOC_FONT_NAME, 'font_size': DOC_FONT_SIZE, 'align': 'left', 'valign': 'top'}),
+        'note': workbook.add_format({'font_color': '#666666', 'font_name': DOC_FONT_NAME, 'font_size': DOC_SMALL_FONT_SIZE, 'align': 'left', 'valign': 'top'}),
     }
     metadata_end_row = add_metadata(ws, formats, inst, sheet_name)
     data_start_row = metadata_end_row + 2
     chart_start_row = metadata_end_row + 1
+    ws.print_area(chart_start_row, 6, chart_start_row + 40, 24)
     ws.set_zoom(90)
     family = inst['chart']['excel_family']
     fmt = inst['data']['format']
