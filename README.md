@@ -43,6 +43,7 @@ L'ordre d'execució és:
 2. **generate_charts** - Generates canonical instances  
 3. **generate_statistics_summary** - Generates statistical summary
 4. **generate_macro_vba_statistics_summary** - Generates VBA macro for statistical summary
+5. **generate_alt_text_openai** - Generates long alt texts from `charts.json` using an API key from the environment
 
 ### Scripts individuals
 
@@ -61,6 +62,53 @@ uv run python src/long_descriptions/generate_statistics_summary.py
 # Macro VBA
 uv run python src/long_descriptions/generate_macro_vba_statistics_summary.py
 
+# Textos alternatius llargs via OpenAI
+uv run python src/long_descriptions/generate_alt_text_openai.py --start-case 1 --end-case 50
+
+```
+
+### Configurar l'API OpenAI de forma segura
+
+No posis mai la clau al codi. Fes servir una variable d'entorn local o un fitxer `.env` no versionat.
+
+Exemple de `.env` local:
+
+```bash
+OPENAI_API_KEY=la_teva_clau
+OPENAI_MODEL=gpt-5.4
+```
+
+També tens un exemple sense secrets a `.env.example`.
+
+El fitxer de prompt pot fer servir aquests placeholders:
+
+```text
+{case_id}
+{chart_title}
+{chart_json}
+```
+
+Exemple mínim de prompt:
+
+```text
+You are writing a long alt text for chart {case_id}.
+
+Title: {chart_title}
+
+Use the chart data and numeric_summary below to produce exactly these sections:
+### Overview and main message
+### Chart structure
+### Relevant patterns, trends, and comparisons
+### Essential key details
+
+Chart JSON:
+{chart_json}
+```
+
+Exemple d'execució per lots:
+
+```bash
+uv run python src/long_descriptions/generate_alt_text_openai.py --start-case 1 --end-case 500 --batch-size 50
 ```
 
 ### Neteja de fitxers generats
@@ -99,6 +147,7 @@ uv run ruff format .
 │       ├── generate_charts.py                   # Pas 2: Genera instàncies canòniques
 │       ├── generate_statistics_summary.py       # Pas 3: Genera resums estadístics
 │       ├── generate_macro_vba_statistics_summary.py # Pas 4: Genera macro VBA
+│       ├── generate_alt_text_openai.py          # Genera textos alternatius llargs via OpenAI
 │       └── ...
 ├── tests/
 │   ├── __init__.py
@@ -107,6 +156,7 @@ uv run ruff format .
 ├── clean_outputs.py               # Neteja fitxers generats
 ├── test_custom_sizes.py           # Test amb mides personalitzades
 ├── pyproject.toml
+├── .env.example
 ├── .python-version
 ├── README.md
 └── output/                        # Tota la sortida generada
@@ -116,7 +166,6 @@ uv run ruff format .
     ├── charts.json
     ├── charts.xlsx
     ├── manifest.json
-    ├── statistics_summary.json
     ├── statistics_summary_*.csv
     ├── StatisticsSummaryMacro.bas
     └── metriques/

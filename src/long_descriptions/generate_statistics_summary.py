@@ -13,7 +13,6 @@ from typing import Any, Dict, List
 BASE_DIR = Path.cwd()
 OUTPUT_ROOT = BASE_DIR / "output"
 INPUT_JSON = OUTPUT_ROOT / "charts.json"
-OUTPUT_JSON = OUTPUT_ROOT / "statistics_summary.json"
 OUTPUT_CSV_DIR = OUTPUT_ROOT
 
 
@@ -454,6 +453,27 @@ def build_summary(instances: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 	return summaries
 
 
+def enrich_instances_with_summary(
+	instances: List[Dict[str, Any]], summaries: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+	summary_by_id = {
+		str(summary.get("id")): summary
+		for summary in summaries
+		if summary.get("id") is not None
+	}
+
+	enriched_instances: List[Dict[str, Any]] = []
+	for instance in instances:
+		instance_id = str(instance.get("id") or "")
+		summary = summary_by_id.get(instance_id)
+		enriched_instance = dict(instance)
+		if summary is not None:
+			enriched_instance["numeric_summary"] = summary.get("numeric_summary")
+		enriched_instances.append(enriched_instance)
+
+	return enriched_instances
+
+
 def main() -> None:
 	if not INPUT_JSON.exists():
 		raise FileNotFoundError(f"Input file not found: {INPUT_JSON}")
@@ -462,14 +482,14 @@ def main() -> None:
 		instances = json.load(file)
 
 	summary = build_summary(instances)
+	enriched_instances = enrich_instances_with_summary(instances, summary)
 
-	OUTPUT_JSON.parent.mkdir(parents=True, exist_ok=True)
-	with OUTPUT_JSON.open("w", encoding="utf-8") as file:
-		json.dump(summary, file, ensure_ascii=False, indent=2)
+	with INPUT_JSON.open("w", encoding="utf-8") as file:
+		json.dump(enriched_instances, file, ensure_ascii=False, indent=2)
 
 	csv_files = write_family_csvs(summary)
 
-	print(f"Statistics summary generated: {OUTPUT_JSON}")
+	print(f"charts.json enriched with numeric_summary: {INPUT_JSON}")
 	print(f"Instances processed: {len(summary)}")
 	print("CSV files generated per family:")
 	for csv_file in csv_files:

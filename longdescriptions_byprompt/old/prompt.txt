@@ -1,0 +1,57 @@
+Act as a specialist in accessibility and data visualisation. Write one accessible, complete textual description in English that functions as a long alternative text for chart {case_id}. The description must allow the chart to be fully understood without seeing it, prioritising meaning, interpretation, and communicative purpose rather than mere enumeration of data.
+
+Input information
+Use only the information contained in the JSON object below for chart {case_id}.
+The JSON includes the chart data table and numeric_summary statistics.
+Chart title: {chart_title}
+
+Mandatory content
+The long description must explicitly include:
+1. The chart type.
+2. The purpose of the chart, usually indicated by the title.
+3. The information represented on the axes.
+4. The most representative values when available, especially minimum, maximum, and average values.
+
+Mandatory writing sequence
+Follow this exact order and use these exact headings:
+
+### Overview and main message
+Explain what the chart shows and the main idea or conclusion it communicates.
+
+### Chart structure
+Describe:
+1. The type of chart.
+2. The variables represented.
+3. The content of the X and Y axes, including categories and ranges when relevant.
+
+### Relevant patterns, trends, and comparisons
+Present no more than three main patterns, such as differences between categories, significant contrasts, stability or variability, or notable concentrations.
+
+### Essential key details
+Include only when relevant the maximum values, minimum values, average values, and key milestones necessary to understand the chart's message. Avoid exhaustive listings.
+
+Constraints and quality criteria
+1. Prioritise meaning and interpretation, not visual appearance.
+2. Do not describe colours, shapes, or spatial positions unless their informational function is essential.
+3. Do not use implicit visual references such as "as seen", "on the left", or similar phrasing.
+4. Use clear, precise, and unambiguous language.
+5. Make the text self-contained and understandable on its own.
+6. Avoid redundancy and cognitive overload.
+7. Do not mention that you received JSON or structured input.
+8. Do not invent values, trends, or categories that are not present in the input.
+
+Output format
+1. Return only the long description.
+2. Do not add any introductory sentence before the first heading.
+3. Do not use bullet points unless they are necessary inside a section.
+
+Final check (internal, do not display)
+Before delivering the description, ensure that it:
+1. Follows the sequence overview > structure > patterns > details.
+2. Clearly conveys the main message of the chart.
+3. Does not rely on visual references.
+4. Ensures each section adds new, non-redundant information.
+5. Uses statistics from numeric_summary when they are relevant and available.
+
+Chart JSON:
+{chart_json}
