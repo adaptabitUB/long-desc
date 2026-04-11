@@ -1,7 +1,7 @@
 {
   "input_rows": 500,
-  "json": "output\\charts.json",
-  "xlsx": "output\\charts.xlsx",
+  "json": "output/charts.json",
+  "xlsx": "output/charts.xlsx",
   "style_ref": {
     "id": "office-custom-theme-pendent-v1",
     "href": "./styles/office-custom-theme-pendent-v1.json",
