@@ -1,6 +1,5 @@
 """Main orchestration script to run all generators in sequence."""
 
-import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -10,24 +9,36 @@ from . import (
     generate_charts,
     generate_statistics_summary,
     generate_macro_vba_statistics_summary,
+    generate_alt_text_openai,
+    metriques_programatiques_openai,
 )
 from .experiment_tracker import ExperimentTracker
 
 
 def main(
     enable_versioning: bool = True,
+    generate_descriptions: bool = False,
     model_name: str = "gpt-5.4",
     prompt_version: str = "v1",
-    random_seed: int = 20260311
+    random_seed: int = 20260311,
+    use_mock_api: bool = False,
+    description_start_case: int = 1,
+    description_end_case: int | None = None,
+    description_batch_size: int = 50
 ) -> None:
     """
     Run all generation scripts in sequence.
     
     Args:
         enable_versioning: If True, use experiment versioning system
+        generate_descriptions: If True, generate alt-text descriptions (uses API/mock)
         model_name: Name of the model to use (for experiment ID)
         prompt_version: Version of the prompt template
         random_seed: Random seed for reproducibility
+        use_mock_api: If True, use mock responses instead of real API calls
+        description_start_case: First case number for descriptions
+        description_end_case: Last case number for descriptions (None = all)
+        description_batch_size: Batch size for description generation
     """
     print("=" * 80)
     print("Starting Long Descriptions Generation Pipeline")
@@ -108,8 +119,12 @@ def main(
     
     start_time = time.time()
     
+    # Determine total steps
+    # Step 6 (metrics) only runs if step 5 (descriptions) was executed
+    total_steps = 6 if generate_descriptions else 4
+    
     # Step 1: Generate coverage matrix
-    print("[1/4] Running generate_coverage_matrix...")
+    print(f"[1/{total_steps}] Running generate_coverage_matrix...")
     step_start = time.time()
     generate_coverage_matrix.main(
         target_full_cases=5000,
@@ -123,7 +138,7 @@ def main(
     print()
     
     # Step 2: Generate canonical instances
-    print("[2/4] Running generate_charts...")
+    print(f"[2/{total_steps}] Running generate_charts...")
     step_start = time.time()
     generate_charts.main(experiment_dir=experiment_dir)
     step_time = time.time() - step_start
@@ -133,7 +148,7 @@ def main(
     print()
     
     # Step 3: Generate statistical summary
-    print("[3/4] Running generate_statistics_summary...")
+    print(f"[3/{total_steps}] Running generate_statistics_summary...")
     step_start = time.time()
     generate_statistics_summary.main(experiment_dir=experiment_dir)
     step_time = time.time() - step_start
@@ -143,7 +158,7 @@ def main(
     print()
     
     # Step 4: Generate VBA macro for statistical summary
-    print("[4/4] Running generate_macro_vba_statistics_summary...")
+    print(f"[4/{total_steps}] Running generate_macro_vba_statistics_summary...")
     step_start = time.time()
     generate_macro_vba_statistics_summary.main(experiment_dir=experiment_dir)
     step_time = time.time() - step_start
@@ -151,6 +166,43 @@ def main(
     if tracker:
         tracker.update_results({"vba_macro_time": step_time})
     print()
+    
+    # Step 5 (Optional): Generate alt-text descriptions using LLM
+    if generate_descriptions:
+        print(f"[5/{total_steps}] Running generate_alt_text_openai...")
+        if use_mock_api:
+            print("⚠️  Using MOCK mode - no real API costs")
+        else:
+            print("⚠️  Using REAL API - this will incur costs!")
+        
+        step_start = time.time()
+        generate_alt_text_openai.main(
+            experiment_dir=experiment_dir,
+            start_case=description_start_case,
+            end_case=description_end_case,
+            batch_size=description_batch_size,
+            model=model_name,
+            use_mock=use_mock_api
+        )
+        step_time = time.time() - step_start
+        print(f"✓ Completed in {step_time:.2f}s")
+        if tracker:
+            tracker.update_results({
+                "descriptions_time": step_time,
+                "descriptions_generated": True,
+                "descriptions_mock": use_mock_api
+            })
+        print()
+        
+        # Step 6: Generate programmatic metrics for descriptions
+        print(f"[6/{total_steps}] Running metriques_programatiques_openai...")
+        step_start = time.time()
+        metriques_programatiques_openai.main(experiment_dir=experiment_dir)
+        step_time = time.time() - step_start
+        print(f"✓ Completed in {step_time:.2f}s")
+        if tracker:
+            tracker.update_results({"metrics_time": step_time})
+        print()
     
     total_time = time.time() - start_time
     

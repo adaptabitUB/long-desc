@@ -43,7 +43,10 @@ L'ordre d'execució és:
 2. **generate_charts** - Generates canonical instances  
 3. **generate_statistics_summary** - Generates statistical summary
 4. **generate_macro_vba_statistics_summary** - Generates VBA macro for statistical summary
-5. **generate_alt_text_openai** - Generates long alt texts from `charts.json` using an API key from the environment
+5. **generate_alt_text_openai** (opcional) - Generates long alt texts using LLM (OpenAI API or mock)
+
+**Nota:** El pas 5 s'executa només si es configura `generate_descriptions=True` al `run_pipeline.py`. 
+Per defecte usa mock responses (sense cost d'API). Per usar l'API real, configura `use_mock_api=False`.
 
 ### Scripts individuals
 

@@ -1,0 +1,60 @@
+{
+  "experiment_id": "exp_2026-04-13_15-14_gpt54_v1",
+  "timestamp": "2026-04-13T15:14:53.949534",
+  "git_commit": "2322798940833f9bcfbe73e03d3e7963866433db",
+  "git_branch": "main",
+  "git_dirty": true,
+  "environment": {
+    "python_version": "3.12.4",
+    "packages": {
+      "openai": "2.31.0",
+      "pandas": "3.0.2",
+      "numpy": "2.4.4",
+      "openpyxl": "3.1.5"
+    },
+    "platform": "macOS-26.3.1-arm64-i386-64bit"
+  },
+  "model_config": {
+    "provider": "openai",
+    "model_name": "gpt-5.4",
+    "model_version": "gpt-5.4-2026-04-13",
+    "inference_params": {
+      "temperature": 0.7,
+      "max_tokens": 1500,
+      "top_p": 1.0,
+      "frequency_penalty": 0,
+      "presence_penalty": 0
+    }
+  },
+  "prompt": {
+    "version": "v1",
+    "file": "experiments/prompts/versions/v1_prompt.txt",
+    "hash": "sha256:eee9ce9dda26ca0c...",
+    "commit": "2322798940833f9bcfbe73e03d3e7963866433db"
+  },
+  "data": {
+    "matrix_file": "data_snapshots/matrix_seed20260311_v1.csv",
+    "charts_snapshot": "data_snapshots/charts_seed20260311_v1.json",
+    "random_seed": 20260311,
+    "num_cases": 500
+  },
+  "pipeline_params": {
+    "coverage_matrix": {
+      "target_full_cases": 5000,
+      "target_sample_cases": 500
+    },
+    "chart_generation": {
+      "random_seed": 20260311
+    }
+  },
+  "results": {
+    "coverage_matrix_time": 0.6901891231536865,
+    "charts_generation_time": 1.0728330612182617,
+    "statistics_summary_time": 0.4514272212982178,
+    "vba_macro_time": 0.00015115737915039062,
+    "total_pipeline_time": 2.2151432037353516,
+    "pipeline_completed": true,
+    "completion_timestamp": "2026-04-13T15:14:56.473959"
+  },
+  "evaluation": {}
+}

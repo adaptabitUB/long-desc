@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 
+# Legacy mode constants (used only when experiment_dir is None)
 BASE_DIR = Path.cwd()
 OUTPUT_ROOT = BASE_DIR / "output"
 INPUT_JSON = OUTPUT_ROOT / "charts.json"
@@ -311,36 +312,6 @@ def flatten_for_csv(summary: Dict[str, Any]) -> Dict[str, Any]:
 	return row
 
 
-def write_family_csvs(summaries: List[Dict[str, Any]]) -> List[Path]:
-	OUTPUT_CSV_DIR.mkdir(parents=True, exist_ok=True)
-	family_groups: Dict[str, List[Dict[str, Any]]] = OrderedDict()
-
-	for summary in summaries:
-		family = str(summary.get("type") or "NoFamily")
-		family_groups.setdefault(family, []).append(summary)
-
-	created_files: List[Path] = []
-	for family, items in family_groups.items():
-		rows = [flatten_for_csv(item) for item in items]
-		all_headers: List[str] = []
-		for row in rows:
-			for key in row.keys():
-				if key not in all_headers:
-					all_headers.append(key)
-
-		filename = f"statistics_summary_{slugify_family(family)}.csv"
-		out_file = OUTPUT_CSV_DIR / filename
-		with out_file.open("w", encoding="utf-8", newline="") as csv_file:
-			writer = csv.DictWriter(csv_file, fieldnames=all_headers)
-			writer.writeheader()
-			for row in rows:
-				writer.writerow(row)
-
-		created_files.append(out_file)
-
-	return created_files
-
-
 def build_numeric_summary(instance: Dict[str, Any]) -> Dict[str, Any]:
 	records = instance.get("data", {}).get("source", {}).get("values", [])
 	if not records:
@@ -481,48 +452,62 @@ def main(experiment_dir: Path | None = None) -> None:
 	Args:
 		experiment_dir: Optional experiment directory for versioned output
 	"""
-	# Determine paths
+	# Determine paths based on mode (versioned vs legacy)
 	if experiment_dir is not None:
 		artifacts_dir = Path(experiment_dir) / "artifacts"
 		input_json = artifacts_dir / "charts.json"
 		csv_dir = artifacts_dir / "statistics"
 	else:
+		# Legacy mode: use output/ directory
 		input_json = INPUT_JSON
 		csv_dir = OUTPUT_CSV_DIR
 	
 	if not input_json.exists():
 		raise FileNotFoundError(f"Input file not found: {input_json}")
 
+	# Load instances and build summaries
 	with input_json.open("r", encoding="utf-8") as file:
 		instances = json.load(file)
 
 	summary = build_summary(instances)
 	enriched_instances = enrich_instances_with_summary(instances, summary)
 
+	# Write back enriched instances with numeric_summary
 	with input_json.open("w", encoding="utf-8") as file:
 		json.dump(enriched_instances, file, ensure_ascii=False, indent=2)
 
-	# Group summaries by family for CSV export
-	summary_by_family = {}
-	for item in summary:
-		family = item.get("type", "unknown")
-		if family not in summary_by_family:
-			summary_by_family[family] = []
-		summary_by_family[family].append(item)
-
-	# Write CSVs with dynamic directory
+	# Write CSV files by family using legacy flat format
 	csv_dir.mkdir(parents=True, exist_ok=True)
+	
+	# Group summaries by family
+	family_groups: Dict[str, List[Dict[str, Any]]] = OrderedDict()
+	for item in summary:
+		family = str(item.get("type") or "NoFamily")
+		family_groups.setdefault(family, []).append(item)
+
+	# Write one CSV per family with flattened structure
 	csv_files = []
-	for family_name, family_data in summary_by_family.items():
-		csv_file = csv_dir / f"statistics_summary_{family_name.lower().replace(' ', '_')}.csv"
-		if family_data:
-			first_instance = family_data[0]
-			fieldnames = list(first_instance.keys())
-			with csv_file.open("w", newline="", encoding="utf-8-sig") as f:
-				writer = csv.DictWriter(f, fieldnames=fieldnames)
-				writer.writeheader()
-				writer.writerows(family_data)
-			csv_files.append(csv_file)
+	for family, items in family_groups.items():
+		# Flatten each summary to legacy CSV format
+		rows = [flatten_for_csv(item) for item in items]
+		
+		# Collect all headers (to handle variations across instances)
+		all_headers: List[str] = []
+		for row in rows:
+			for key in row.keys():
+				if key not in all_headers:
+					all_headers.append(key)
+		
+		# Write CSV
+		filename = f"statistics_summary_{slugify_family(family)}.csv"
+		csv_file = csv_dir / filename
+		with csv_file.open("w", encoding="utf-8", newline="") as f:
+			writer = csv.DictWriter(f, fieldnames=all_headers)
+			writer.writeheader()
+			for row in rows:
+				writer.writerow(row)
+		
+		csv_files.append(csv_file)
 
 	print(f"charts.json enriched with numeric_summary: {input_json}")
 	print(f"Instances processed: {len(summary)}")

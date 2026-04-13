@@ -1,0 +1,77 @@
+{
+  "experiment_id": "exp_2026-04-13_15-20_gpt4o_legacy",
+  "timestamp": "2026-04-13T15:20:21.167207",
+  "git_commit": "2322798940833f9bcfbe73e03d3e7963866433db",
+  "git_branch": "main",
+  "git_dirty": true,
+  "environment": {
+    "python_version": "3.12.4",
+    "packages": {
+      "openai": "2.31.0",
+      "pandas": "3.0.2",
+      "numpy": "2.4.4",
+      "openpyxl": "3.1.5"
+    },
+    "platform": "macOS-26.3.1-arm64-i386-64bit"
+  },
+  "model_config": {
+    "provider": "openai",
+    "model_name": "gpt-4o",
+    "model_version": "gpt-4o-2024-08-06",
+    "inference_params": {
+      "temperature": 0.7,
+      "max_tokens": 1500,
+      "top_p": 1.0,
+      "frequency_penalty": 0,
+      "presence_penalty": 0
+    }
+  },
+  "prompt": {
+    "version": "legacy",
+    "file": "longdescriptions_byprompt/old/prompt.txt",
+    "hash": null,
+    "commit": "2322798940833f9bcfbe73e03d3e7963866433db",
+    "note": "Legacy descriptions imported from longdescriptions_byprompt/openai"
+  },
+  "data": {
+    "matrix_file": "data_snapshots/matrix_seed20260311_v1.csv",
+    "charts_snapshot": "data_snapshots/charts_seed20260311_v1.json",
+    "random_seed": 20260311,
+    "num_cases": 500
+  },
+  "pipeline_params": {
+    "coverage_matrix": {
+      "target_full_cases": 5000,
+      "target_sample_cases": 500
+    },
+    "chart_generation": {
+      "random_seed": 20260311
+    }
+  },
+  "results": {
+    "coverage_matrix_time": 0.6524848937988281,
+    "charts_generation_time": 1.1313660144805908,
+    "statistics_summary_time": 0.41033101081848145,
+    "vba_macro_time": 0.0001461505889892578,
+    "descriptions_generated": true,
+    "descriptions_mock": false,
+    "descriptions_source": "legacy_import",
+    "description_files": [
+      "alt_text_descriptions_1015-1499.md",
+      "alt_text_descriptions_1524-1963.md",
+      "alt_text_descriptions_1970-2498.md",
+      "alt_text_descriptions_22-462.md",
+      "alt_text_descriptions_2504-3008.md",
+      "alt_text_descriptions_3016-3467.md",
+      "alt_text_descriptions_3468-4000.md",
+      "alt_text_descriptions_4002-4486.md",
+      "alt_text_descriptions_4487-4968.md",
+      "alt_text_descriptions_499-980.md"
+    ],
+    "metrics_time": 1.3500111103057861,
+    "total_pipeline_time": 3.552415132522583,
+    "pipeline_completed": true,
+    "completion_timestamp": "2026-04-13T15:20:25.035616"
+  },
+  "evaluation": {}
+}

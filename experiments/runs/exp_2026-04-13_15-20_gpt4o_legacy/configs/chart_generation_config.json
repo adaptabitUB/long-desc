@@ -1,0 +1,102 @@
+{
+  "random_seed": 20260311,
+  "color_palette": [
+    "#377eb8",
+    "#4daf4a",
+    "#e41a1c",
+    "#984ea3",
+    "#ff7f00",
+    "#ffff33",
+    "#a65628",
+    "#f781bf"
+  ],
+  "pattern_palette": [
+    "diagonal-right",
+    "diagonal-left",
+    "vertical",
+    "horizontal",
+    "dots",
+    "cross",
+    "diag-cross",
+    "grid"
+  ],
+  "style_policy": {
+    "column": {
+      "mode": "pattern-per-series",
+      "legend": "pattern+color"
+    },
+    "bar": {
+      "mode": "pattern-per-series",
+      "legend": "pattern+color"
+    },
+    "area": {
+      "mode": "pattern-per-series-light",
+      "legend": "pattern+color"
+    },
+    "pie": {
+      "mode": "pattern-per-point",
+      "legend": "pattern+color"
+    },
+    "doughnut": {
+      "mode": "pattern-per-point",
+      "legend": "pattern+color"
+    },
+    "radar": {
+      "mode": "pattern-per-series-light",
+      "legend": "pattern+color"
+    },
+    "combo-column": {
+      "mode": "pattern-per-series",
+      "legend": "pattern+color"
+    },
+    "combo-line": {
+      "mode": "line-marker",
+      "legend": "line+marker"
+    },
+    "line": {
+      "mode": "line-marker",
+      "legend": "line+marker"
+    },
+    "scatter": {
+      "mode": "marker-only",
+      "legend": "marker+color"
+    },
+    "stock": {
+      "mode": "line-marker",
+      "legend": "line+marker"
+    },
+    "histogram": {
+      "mode": "single-pattern",
+      "legend": "pattern+color"
+    },
+    "funnel": {
+      "mode": "pattern-per-point",
+      "legend": "pattern+color"
+    },
+    "surface": {
+      "mode": "contour-scale",
+      "legend": "scale"
+    }
+  },
+  "domains": [
+    "sales",
+    "finance",
+    "education",
+    "health",
+    "energy",
+    "operations",
+    "manufacturing",
+    "climate",
+    "demographics",
+    "web analytics"
+  ],
+  "default_chart_size": {
+    "width": 1400,
+    "height": 820
+  },
+  "font_settings": {
+    "name": "Arial",
+    "size": 12,
+    "title_size": 14
+  }
+}

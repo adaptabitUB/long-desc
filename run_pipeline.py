@@ -28,10 +28,16 @@ from long_descriptions.main import main
 
 if __name__ == "__main__":
     # Run the pipeline with default settings
-    # To customize, edit the parameters in src/long_descriptions/main.py
+    # Set generate_descriptions=True to include alt-text generation (Step 5)
+    # Set use_mock_api=False to use real OpenAI API (incurs costs!)
     main(
-        enable_versioning=True,  # Set to False for legacy output/ directory behavior
+        enable_versioning=True,       # Use experiment versioning
+        generate_descriptions=True,   # Include alt-text descriptions (Step 5)
+        use_mock_api=True,            # Use mock responses (no API costs)
         model_name="gpt-5.4",
         prompt_version="v1",
-        random_seed=20260311
+        random_seed=20260311,
+        description_start_case=1,     # Start from first available case
+        description_end_case=100,     # Generate for cases up to 100
+        description_batch_size=10     # 10 cases per batch file
     )
