@@ -33,7 +33,8 @@ OUTPUT_JSON_FACTUAL_CLAIMS = METRICS_DIR / "afirmacions_factuals.json"
 OUTPUT_CSV_FACTUAL_CHECK = METRICS_DIR / "verificacio_afirmacions.csv"
 OUTPUT_JSON_FACTUAL_CHECK = METRICS_DIR / "verificacio_afirmacions.json"
 
-GROUNDTRUTH_CANONICAL_TABLE = LONG_DESCRIPTIONS_DIR / "chatgpt" / "instancies_canoniques.json"
+GROUNDTRUTH_CANONICAL_TABLE = BASE_DIR / "chartsold.json"
+LONG_DESCRIPTIONS_COMBINED = BASE_DIR / "long_descriptions_combined.json"
 GROUNDTRUTH_STATS_DIR = LONG_DESCRIPTIONS_DIR / "statistics_50"
 GROUNDTRUTH_STATS_GLOB = "resum_estadistic_instancies*.json"
 
@@ -595,7 +596,7 @@ def load_groundtruth_statistics() -> Dict[str, Dict[str, Any]]:
 def load_groundtruth_cases() -> Dict[str, Dict[str, Any]]:
 	if not GROUNDTRUTH_CANONICAL_TABLE.exists():
 		raise FileNotFoundError(
-			f"No s'ha trobat el fitxer canonic de ground truth: {GROUNDTRUTH_CANONICAL_TABLE}"
+			f"No s'ha trobat el fitxer de ground truth: {GROUNDTRUTH_CANONICAL_TABLE}"
 		)
 
 	entries = json.loads(GROUNDTRUTH_CANONICAL_TABLE.read_text(encoding="utf-8"))
@@ -857,24 +858,41 @@ def analyse_row(
 	}
 
 def load_metrics() -> Dict[str, List[Dict[str, Any]]]:
-	"""Load metrics for all configured providers from markdown prompt files."""
-	results = {}
-	
-	for provider_name, provider_dir in PROVIDERS.items():
-		provider_results: List[Dict[str, Any]] = []
-		markdown_files = sorted(provider_dir.glob("*.md"))
-		if not markdown_files:
-			raise FileNotFoundError(
-				f"No s'ha trobat cap fitxer markdown d'entrada per a {provider_name} a {provider_dir}"
-			)
+	"""Load metrics for all configured providers from long_descriptions_combined.json."""
+	if not LONG_DESCRIPTIONS_COMBINED.exists():
+		raise FileNotFoundError(f"No s'ha trobat el fitxer: {LONG_DESCRIPTIONS_COMBINED}")
+	if not GROUNDTRUTH_CANONICAL_TABLE.exists():
+		raise FileNotFoundError(f"No s'ha trobat el fitxer: {GROUNDTRUTH_CANONICAL_TABLE}")
 
-		for markdown_path in markdown_files:
-			content = markdown_path.read_text(encoding="utf-8")
-			for case_entry in extract_case_blocks_from_markdown(content):
-				provider_results.append(analyse_row(case_entry))
+	combined = json.loads(LONG_DESCRIPTIONS_COMBINED.read_text(encoding="utf-8"))
+	chartsold = json.loads(GROUNDTRUTH_CANONICAL_TABLE.read_text(encoding="utf-8"))
 
-		results[provider_name] = provider_results
-	
+	titles_by_id: Dict[str, str] = {}
+	for entry in chartsold:
+		raw_id = str(entry.get("id") or "")
+		numeric_id = raw_id.removeprefix("CASE_")
+		titles_by_id[numeric_id] = str(entry.get("title") or "")
+
+	results: Dict[str, List[Dict[str, Any]]] = {provider: [] for provider in PROVIDERS}
+
+	for entry in combined:
+		case_id = str(entry.get("id") or "").strip()
+		chart_title = titles_by_id.get(case_id, "")
+
+		for provider in PROVIDERS:
+			provider_data = (entry.get(provider) or {}) if isinstance(entry, dict) else {}
+			case_entry = {
+				"id": case_id,
+				"chart": chart_title,
+				"sections": {
+					"overview_and_main_message": str(provider_data.get("overview_and_main_message") or ""),
+					"chart_structure": str(provider_data.get("chart_structure") or ""),
+					"relevant_patterns_trends_and_comparisons": str(provider_data.get("relevant_patterns_trends_and_comparisons") or ""),
+					"essential_key_details": str(provider_data.get("essential_key_details") or ""),
+				},
+			}
+			results[provider].append(analyse_row(case_entry))
+
 	return results
 
 def build_unified_cases(all_metrics: Dict[str, List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
