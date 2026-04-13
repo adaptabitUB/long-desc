@@ -474,22 +474,49 @@ def enrich_instances_with_summary(
 	return enriched_instances
 
 
-def main() -> None:
-	if not INPUT_JSON.exists():
-		raise FileNotFoundError(f"Input file not found: {INPUT_JSON}")
+def main(experiment_dir: Path | None = None) -> None:
+	"""
+	Generate statistical summaries for chart families.
+	
+	Args:
+		experiment_dir: Optional experiment directory for versioned output
+	"""
+	# Determine paths
+	if experiment_dir is not None:
+		artifacts_dir = Path(experiment_dir) / "artifacts"
+		input_json = artifacts_dir / "charts.json"
+		csv_dir = artifacts_dir / "statistics"
+	else:
+		input_json = INPUT_JSON
+		csv_dir = OUTPUT_CSV_DIR
+	
+	if not input_json.exists():
+		raise FileNotFoundError(f"Input file not found: {input_json}")
 
-	with INPUT_JSON.open("r", encoding="utf-8") as file:
+	with input_json.open("r", encoding="utf-8") as file:
 		instances = json.load(file)
 
 	summary = build_summary(instances)
 	enriched_instances = enrich_instances_with_summary(instances, summary)
 
-	with INPUT_JSON.open("w", encoding="utf-8") as file:
+	with input_json.open("w", encoding="utf-8") as file:
 		json.dump(enriched_instances, file, ensure_ascii=False, indent=2)
 
-	csv_files = write_family_csvs(summary)
+	# Write CSVs with dynamic directory
+	csv_dir.mkdir(parents=True, exist_ok=True)
+	csv_files = []
+	for family_name, family_data in summary.items():
+		csv_file = csv_dir / f"statistics_summary_{family_name.lower().replace(' ', '_')}.csv"
+		if family_data:
+			first_instance = family_data[0]
+			fieldnames = list(first_instance.keys())
+			with csv_file.open("w", newline="", encoding="utf-8-sig") as f:
+				writer = csv.DictWriter(f, fieldnames=fieldnames)
+				writer.writeheader()
+				writer.writerows(family_data)
+			csv_files.append(csv_file)
 
-	print(f"charts.json enriched with numeric_summary: {INPUT_JSON}")
+	print(f"charts.json enriched with numeric_summary: {input_json}")
 	print(f"Instances processed: {len(summary)}")
 	print("CSV files generated per family:")
 	for csv_file in csv_files:

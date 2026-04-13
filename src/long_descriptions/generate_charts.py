@@ -1944,17 +1944,62 @@ def render_instance_sheet(workbook, sheet_name, inst):
     return render_long_chart(workbook, ws, formats, inst, sheet_name, data_start_row, chart_start_row)
 
 
-def main():
-    df = pd.read_csv(INPUT_CSV)
+def main(experiment_dir: Path | None = None):
+    """
+    Generate canonical chart instances.
+    
+    Args:
+        experiment_dir: Optional experiment directory for versioned output
+    """
+    # Determine output paths
+    if experiment_dir is not None:
+        output_dir = Path(experiment_dir) / "artifacts"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        out_json = output_dir / 'charts.json'
+        out_xlsx = output_dir / 'charts.xlsx'
+        out_manifest = output_dir / 'manifest_charts.json'
+        
+        # Also save configuration snapshot
+        config_dir = Path(experiment_dir) / "configs"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        config_file = config_dir / "chart_generation_config.json"
+        
+        chart_config = {
+            "random_seed": 20260311,  # RANDOM_SEED from generate_coverage_matrix
+            "color_palette": ACCESSIBLE_COLOR_PALETTE,
+            "pattern_palette": [p['name'] for p in ACCESSIBLE_PATTERN_PALETTE],
+            "style_policy": ACCESSIBLE_STYLE_POLICY,
+            "domains": ["sales", "finance", "education", "health", "energy", "operations", 
+                       "manufacturing", "climate", "demographics", "web analytics"],
+            "default_chart_size": DEFAULT_CHART_SIZE,
+            "font_settings": {
+                "name": DOC_FONT_NAME,
+                "size": DOC_FONT_SIZE,
+                "title_size": DOC_TITLE_FONT_SIZE
+            }
+        }
+        
+        with config_file.open('w', encoding='utf-8') as f:
+            json.dump(chart_config, f, ensure_ascii=False, indent=2)
+        print(f"Configuration snapshot saved: {config_file.resolve()}")
+        
+        input_csv = output_dir / "matrix_500.csv"
+    else:
+        out_json = OUT_JSON
+        out_xlsx = OUT_XLSX
+        out_manifest = OUT_MANIFEST
+        input_csv = INPUT_CSV
+    
+    df = pd.read_csv(input_csv)
     rows = [clean_row(r) for r in df.to_dict(orient='records')]
     instances = [make_canonical_instance(r) for r in rows]
     sorted_instances = sorted(instances, key=case_sort_key)
     export_instances = instances
 
-    with OUT_JSON.open('w', encoding='utf-8') as f:
+    with out_json.open('w', encoding='utf-8') as f:
         json.dump(export_instances, f, ensure_ascii=False, indent=2)
 
-    workbook = xlsxwriter.Workbook(str(OUT_XLSX))
+    workbook = xlsxwriter.Workbook(str(out_xlsx))
     used = set()
     sheet_map = {}
     render_stats = {'exact': 0, 'approximate_or_metadata': 0}
@@ -1972,22 +2017,34 @@ def main():
 
     manifest = {
         'input_rows': len(rows),
-        'json': str(OUT_JSON),
-        'xlsx': str(OUT_XLSX),
+        'json': str(out_json),
+        'xlsx': str(out_xlsx),
         'style_ref': STYLE_REF,
         'render_stats': render_stats,
         'detail_counts': detail_counts,
         'domains': sorted({str(row['semantic_domain']) for row in rows if row.get('semantic_domain') is not None}),
         'families': dict(OrderedDict((family, sum(1 for row in rows if row.get('Excel_family') == family)) for family in OrderedDict((row.get('Excel_family'), None) for row in rows if row.get('Excel_family') is not None).keys())),
     }
-    with OUT_MANIFEST.open('w', encoding='utf-8') as f:
+    with out_manifest.open('w', encoding='utf-8') as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
 
     print('Generated:')
-    print(OUT_JSON)
-    print(OUT_XLSX)
-    print(OUT_MANIFEST)
+    print(out_json)
+    print(out_xlsx)
+    print(out_manifest)
     print(render_stats)
+    
+    # Save charts snapshot to data_snapshots if using versioning
+    if experiment_dir is not None:
+        project_root = Path(__file__).resolve().parent.parent.parent
+        snapshots_dir = project_root / "experiments" / "data_snapshots"
+        snapshots_dir.mkdir(parents=True, exist_ok=True)
+        
+        snapshot_json = snapshots_dir / "charts_seed20260311_v1.json"
+        if not snapshot_json.exists():
+            import shutil
+            shutil.copy(out_json, snapshot_json)
+            print(f"Charts snapshot created: {snapshot_json.resolve()}")
 
 
 if __name__ == '__main__':

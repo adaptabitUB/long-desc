@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "created": "2026-04-13",
+  "description": "Manual evaluation dataset with ground truth examples for quality assessment",
+  "cases": [
+    {
+      "case_id": "22",
+      "chart_family": "Column",
+      "expected_sections": [
+        "Overview and main message",
+        "Chart structure",
+        "Relevant patterns, trends, and comparisons",
+        "Essential key details"
+      ],
+      "expected_qualities": {
+        "mentions_chart_type": true,
+        "mentions_purpose": true,
+        "mentions_axes": true,
+        "includes_key_values": true,
+        "no_visual_references": true
+      },
+      "notes": "Basic clustered column chart example"
+    },
+    {
+      "case_id": "100",
+      "chart_family": "Bar",
+      "expected_sections": [
+        "Overview and main message",
+        "Chart structure",
+        "Relevant patterns, trends, and comparisons",
+        "Essential key details"
+      ],
+      "expected_qualities": {
+        "mentions_chart_type": true,
+        "mentions_purpose": true,
+        "mentions_axes": true,
+        "includes_key_values": true,
+        "no_visual_references": true
+      },
+      "notes": "Bar chart with categorical data"
+    },
+    {
+      "case_id": "200",
+      "chart_family": "Line",
+      "expected_sections": [
+        "Overview and main message",
+        "Chart structure",
+        "Relevant patterns, trends, and comparisons",
+        "Essential key details"
+      ],
+      "expected_qualities": {
+        "mentions_chart_type": true,
+        "mentions_purpose": true,
+        "mentions_axes": true,
+        "includes_trends": true,
+        "no_visual_references": true
+      },
+      "notes": "Time series line chart - should mention trends"
+    },
+    {
+      "case_id": "300",
+      "chart_family": "Pie",
+      "expected_sections": [
+        "Overview and main message",
+        "Chart structure",
+        "Relevant patterns, trends, and comparisons",
+        "Essential key details"
+      ],
+      "expected_qualities": {
+        "mentions_chart_type": true,
+        "mentions_purpose": true,
+        "mentions_proportions": true,
+        "includes_key_segments": true,
+        "no_visual_references": true
+      },
+      "notes": "Pie chart - should focus on proportions"
+    },
+    {
+      "case_id": "400",
+      "chart_family": "Scatter",
+      "expected_sections": [
+        "Overview and main message",
+        "Chart structure",
+        "Relevant patterns, trends, and comparisons",
+        "Essential key details"
+      ],
+      "expected_qualities": {
+        "mentions_chart_type": true,
+        "mentions_purpose": true,
+        "mentions_axes": true,
+        "describes_correlation": true,
+        "no_visual_references": true
+      },
+      "notes": "Scatter plot - should describe correlation/distribution"
+    }
+  ]
+}

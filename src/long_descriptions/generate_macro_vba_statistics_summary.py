@@ -992,12 +992,24 @@ End Function
 """
 
 
-def main() -> None:
-    OUTPUT_BAS.parent.mkdir(parents=True, exist_ok=True)
+def main(experiment_dir: Path | None = None) -> None:
+    """
+    Generate VBA macro for statistics summary.
+    
+    Args:
+        experiment_dir: Optional experiment directory for versioned output
+    """
+    # Determine output path
+    if experiment_dir is not None:
+        output_bas = Path(experiment_dir) / "artifacts" / "StatisticsSummaryMacro.bas"
+    else:
+        output_bas = OUTPUT_BAS
+    
+    output_bas.parent.mkdir(parents=True, exist_ok=True)
     vba_code = build_vba_module()
-    OUTPUT_BAS.write_text(vba_code, encoding="utf-8")
+    output_bas.write_text(vba_code, encoding="utf-8")
 
-    print(f"VBA file generated: {OUTPUT_BAS}")
+    print(f"VBA file generated: {output_bas}")
     print("Import this .bas within the Excel's VBA editor (ALT+F11 > File > Import File).")
     print("Execute for the current sheet or for the whole sheets.")
 

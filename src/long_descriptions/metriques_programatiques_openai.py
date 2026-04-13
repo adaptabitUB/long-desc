@@ -731,7 +731,37 @@ def write_csv(path: Path, rows: List[Dict[str, Any]]) -> None:
             writer.writerow({h: record.get(h) for h in headers})
 
 
-def main() -> None:
+def main(experiment_dir: Path | None = None) -> None:
+    """
+    Generate programmatic metrics for OpenAI descriptions.
+    
+    Args:
+        experiment_dir: Optional experiment directory for versioned input/output
+    """
+    # Determine paths
+    if experiment_dir is not None:
+        artifacts_dir = Path(experiment_dir) / "artifacts"
+        openai_dir = artifacts_dir / "descriptions"
+        groundtruth_json = artifacts_dir / "charts.json"
+        metrics_dir = artifacts_dir / "metrics"
+        
+        # Temporarily override global constants for this execution
+        # This is a workaround to avoid refactoring all helper functions
+        global OPENAI_DIR, GROUNDTRUTH_JSON, METRICS_DIR
+        global OUTPUT_CSV_UNIFIED, OUTPUT_JSON_UNIFIED
+        global OUTPUT_CSV_FACTUAL_CLAIMS, OUTPUT_JSON_FACTUAL_CLAIMS
+        global OUTPUT_CSV_FACTUAL_CHECK, OUTPUT_JSON_FACTUAL_CHECK
+        
+        OPENAI_DIR = openai_dir
+        GROUNDTRUTH_JSON = groundtruth_json
+        METRICS_DIR = metrics_dir
+        OUTPUT_CSV_UNIFIED = metrics_dir / "metriques_openai_unificat.csv"
+        OUTPUT_JSON_UNIFIED = metrics_dir / "metriques_openai_unificat.json"
+        OUTPUT_CSV_FACTUAL_CLAIMS = metrics_dir / "afirmacions_factuals_openai.csv"
+        OUTPUT_JSON_FACTUAL_CLAIMS = metrics_dir / "afirmacions_factuals_openai.json"
+        OUTPUT_CSV_FACTUAL_CHECK = metrics_dir / "verificacio_afirmacions_openai.csv"
+        OUTPUT_JSON_FACTUAL_CHECK = metrics_dir / "verificacio_afirmacions_openai.json"
+    
     cases = load_openai_metrics()
     factual_claims = build_factual_claims(cases)
     verified_claims = verify_factual_claims(factual_claims)

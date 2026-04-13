@@ -680,16 +680,40 @@ def build_workbook(full_cases: List[Dict], sample_cases: List[Dict], coverage_ro
 ### ---------- Main execution ----------
 
 ###
-def main(target_full_cases: int = 5000, target_sample_cases: int = 500) -> None:
-    full_cases, sample_cases, coverage_rows = generate_cases(FAMILIES, seed=RANDOM_SEED, target_full=target_full_cases, target_sample=target_sample_cases)
+def main(
+    target_full_cases: int = 5000,
+    target_sample_cases: int = 500,
+    experiment_dir: Path | None = None
+) -> None:
+    """
+    Generate coverage matrix for chart instances.
+    
+    Args:
+        target_full_cases: Number of full cases to generate
+        target_sample_cases: Number of sample cases to generate
+        experiment_dir: Optional experiment directory for versioned output
+    """
+    full_cases, sample_cases, coverage_rows = generate_cases(
+        FAMILIES,
+        seed=RANDOM_SEED,
+        target_full=target_full_cases,
+        target_sample=target_sample_cases
+    )
 
     assert len(full_cases) == target_full_cases, f"Expected {target_full_cases} cases but got {len(full_cases)}"
     assert len(sample_cases) == target_sample_cases, f"Expected {target_sample_cases} cases but got {len(sample_cases)}"
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    output_xlsx = OUTPUT_DIR / f"coverage_matrix_{target_full_cases}_{target_sample_cases}.xlsx"
-    output_csv_full = OUTPUT_DIR / f"matrix_{target_full_cases}.csv"
-    output_csv_sample = OUTPUT_DIR / f"matrix_{target_sample_cases}.csv"
+    # Determine output directory
+    if experiment_dir is not None:
+        output_dir = Path(experiment_dir) / "artifacts"
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        output_dir = OUTPUT_DIR
+        output_dir.mkdir(parents=True, exist_ok=True)
+    
+    output_xlsx = output_dir / f"coverage_matrix_{target_full_cases}_{target_sample_cases}.xlsx"
+    output_csv_full = output_dir / f"matrix_{target_full_cases}.csv"
+    output_csv_sample = output_dir / f"matrix_{target_sample_cases}.csv"
 
     build_workbook(full_cases, sample_cases, coverage_rows, output_xlsx)
     pd.DataFrame(full_cases).to_csv(output_csv_full, index=False, encoding="utf-8-sig")
@@ -698,6 +722,17 @@ def main(target_full_cases: int = 5000, target_sample_cases: int = 500) -> None:
     print(f"Excel file created: {output_xlsx.resolve()}")
     print(f"CSV {target_full_cases} created:   {output_csv_full.resolve()}")
     print(f"CSV {target_sample_cases} created:    {output_csv_sample.resolve()}")
+    
+    # Also save snapshot to data_snapshots if using versioning
+    if experiment_dir is not None:
+        project_root = Path(__file__).resolve().parent.parent.parent
+        snapshots_dir = project_root / "experiments" / "data_snapshots"
+        snapshots_dir.mkdir(parents=True, exist_ok=True)
+        
+        snapshot_csv = snapshots_dir / f"matrix_{target_full_cases}_{target_sample_cases}_seed{RANDOM_SEED}.csv"
+        if not snapshot_csv.exists():
+            pd.DataFrame(sample_cases).to_csv(snapshot_csv, index=False, encoding="utf-8-sig")
+            print(f"Data snapshot created: {snapshot_csv.resolve()}}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,64 @@
+{
+  "eval_suite": "eval_suite_v1",
+  "version": "1.0",
+  "created": "2026-04-13",
+  "description": "Basic evaluation suite for chart alt-text descriptions quality assessment",
+  "dataset": "eval_dataset.json",
+  "task": "chart_alt_text_quality",
+  "metrics": [
+    {
+      "name": "structure_completeness",
+      "description": "Check if all mandatory sections are present (Overview, Structure, Patterns, Details)",
+      "type": "rule_based",
+      "weight": 0.25
+    },
+    {
+      "name": "readability_score",
+      "description": "Average of Flesch Reading Ease and Gunning Fog index",
+      "type": "programmatic",
+      "weight": 0.20,
+      "thresholds": {
+        "flesch_reading_ease": {"min": 40, "max": 70},
+        "gunning_fog": {"min": 10, "max": 15}
+      }
+    },
+    {
+      "name": "factual_accuracy",
+      "description": "Percentage of factual claims that are supported by ground truth",
+      "type": "programmatic",
+      "weight": 0.35,
+      "thresholds": {
+        "supported_rate": {"min": 85}
+      }
+    },
+    {
+      "name": "length_appropriateness",
+      "description": "Word count within acceptable range",
+      "type": "programmatic",
+      "weight": 0.10,
+      "thresholds": {
+        "word_count": {"min": 100, "max": 500}
+      }
+    },
+    {
+      "name": "no_visual_references",
+      "description": "Check for prohibited visual references like 'as seen', 'on the left', etc.",
+      "type": "rule_based",
+      "weight": 0.10,
+      "forbidden_phrases": ["as seen", "on the left", "on the right", "above", "below", "visually"]
+    }
+  ],
+  "scoring": {
+    "method": "weighted_average",
+    "scale": "0-100"
+  },
+  "aggregation": {
+    "method": "mean",
+    "include_per_family": true
+  },
+  "thresholds": {
+    "mean_score": 75.0,
+    "min_family_score": 70.0,
+    "max_failures": 5
+  }
+}
