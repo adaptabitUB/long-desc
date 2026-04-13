@@ -502,10 +502,18 @@ def main(experiment_dir: Path | None = None) -> None:
 	with input_json.open("w", encoding="utf-8") as file:
 		json.dump(enriched_instances, file, ensure_ascii=False, indent=2)
 
+	# Group summaries by family for CSV export
+	summary_by_family = {}
+	for item in summary:
+		family = item.get("type", "unknown")
+		if family not in summary_by_family:
+			summary_by_family[family] = []
+		summary_by_family[family].append(item)
+
 	# Write CSVs with dynamic directory
 	csv_dir.mkdir(parents=True, exist_ok=True)
 	csv_files = []
-	for family_name, family_data in summary.items():
+	for family_name, family_data in summary_by_family.items():
 		csv_file = csv_dir / f"statistics_summary_{family_name.lower().replace(' ', '_')}.csv"
 		if family_data:
 			first_instance = family_data[0]

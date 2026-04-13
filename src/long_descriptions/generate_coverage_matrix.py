@@ -732,7 +732,7 @@ def main(
         snapshot_csv = snapshots_dir / f"matrix_{target_full_cases}_{target_sample_cases}_seed{RANDOM_SEED}.csv"
         if not snapshot_csv.exists():
             pd.DataFrame(sample_cases).to_csv(snapshot_csv, index=False, encoding="utf-8-sig")
-            print(f"Data snapshot created: {snapshot_csv.resolve()}}")
+            print(f"Data snapshot created: {snapshot_csv.resolve()}")
 
 
 if __name__ == "__main__":
