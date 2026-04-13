@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent.parent
 LONG_DESCRIPTIONS_DIR = PROJECT_ROOT / "longdescriptions_byprompt"
 OUTPUT_DIR = PROJECT_ROOT / "output"
-METRICS_DIR = OUTPUT_DIR / "metriques"
+METRICS_DIR = BASE_DIR
 
 # Configuració de proveedors
 PROVIDERS = {
@@ -35,8 +35,6 @@ OUTPUT_JSON_FACTUAL_CHECK = METRICS_DIR / "verificacio_afirmacions.json"
 
 GROUNDTRUTH_CANONICAL_TABLE = BASE_DIR / "chartsold.json"
 LONG_DESCRIPTIONS_COMBINED = BASE_DIR / "long_descriptions_combined.json"
-GROUNDTRUTH_STATS_DIR = LONG_DESCRIPTIONS_DIR / "statistics_50"
-GROUNDTRUTH_STATS_GLOB = "resum_estadistic_instancies*.json"
 
 WORD_PATTERN = re.compile(r"[A-Za-z]+(?:[-'][A-Za-z]+)*")
 NUMERIC_PATTERN = re.compile(r"(?<![A-Za-z])[+-]?(?:\d+[\.,]?\d*|\d*[\.,]\d+)(?![A-Za-z])")
@@ -554,44 +552,6 @@ def extract_stats_from_summary_entry(summary_entry: Dict[str, Any]) -> Dict[str,
 	}
 
 
-def load_groundtruth_statistics() -> Dict[str, Dict[str, Any]]:
-	stats_files = sorted(GROUNDTRUTH_STATS_DIR.glob(GROUNDTRUTH_STATS_GLOB))
-	if not stats_files:
-		raise FileNotFoundError(
-			f"No s'han trobat fitxers de resum estadistic a {GROUNDTRUTH_STATS_DIR} amb patró {GROUNDTRUTH_STATS_GLOB}"
-		)
-
-	stats_by_case: Dict[str, Dict[str, Any]] = {}
-	for stats_path in stats_files:
-		raw_text = stats_path.read_text(encoding="utf-8")
-		try:
-			entries = json.loads(raw_text)
-		except json.JSONDecodeError:
-			# Some generated summary files may contain trailing commas before ] or }.
-			normalized_text = re.sub(r",\s*([\]}])", r"\1", raw_text)
-			entries = json.loads(normalized_text)
-		if not isinstance(entries, list):
-			continue
-
-		for entry in entries:
-			if not isinstance(entry, dict):
-				continue
-			raw_case_id = str(entry.get("id") or "")
-			case_id = normalize_case_numeric_id(raw_case_id)
-			if not case_id:
-				continue
-
-			stats = extract_stats_from_summary_entry(entry)
-			if stats is None:
-				continue
-
-			stats_by_case[case_id] = {
-				"stats": stats,
-				"source_file": stats_path.name,
-			}
-
-	return stats_by_case
-
 
 def load_groundtruth_cases() -> Dict[str, Dict[str, Any]]:
 	if not GROUNDTRUTH_CANONICAL_TABLE.exists():
@@ -599,11 +559,9 @@ def load_groundtruth_cases() -> Dict[str, Dict[str, Any]]:
 			f"No s'ha trobat el fitxer de ground truth: {GROUNDTRUTH_CANONICAL_TABLE}"
 		)
 
-	entries = json.loads(GROUNDTRUTH_CANONICAL_TABLE.read_text(encoding="utf-8"))
+	entries = json.loads(GROUNDTRUTH_CANONICAL_TABLE.read_text(encoding="utf-8-sig"))
 	if not isinstance(entries, list):
 		raise ValueError(f"Format de ground truth invàlid a {GROUNDTRUTH_CANONICAL_TABLE}: s'esperava una llista")
-
-	stats_by_case = load_groundtruth_statistics()
 
 	groundtruth_by_case: Dict[str, Dict[str, Any]] = {}
 	for entry in entries:
@@ -615,14 +573,12 @@ def load_groundtruth_cases() -> Dict[str, Dict[str, Any]]:
 			continue
 
 		chart_values = collect_chart_values(entry)
-		stats_entry = stats_by_case.get(case_id)
-		stats = stats_entry["stats"] if stats_entry else build_groundtruth_stats(chart_values)
-		stats_source = stats_entry["source_file"] if stats_entry else None
+		stats = build_groundtruth_stats(chart_values)
 		groundtruth_by_case[case_id] = {
 			"case_id": case_id,
 			"source": {
 				"table": GROUNDTRUTH_CANONICAL_TABLE.name,
-				"stats": stats_source,
+				"stats": None,
 			},
 			"values": chart_values,
 			"category_count": collect_unique_field_count(entry, ["categoria", "category", "x"]),
@@ -864,8 +820,8 @@ def load_metrics() -> Dict[str, List[Dict[str, Any]]]:
 	if not GROUNDTRUTH_CANONICAL_TABLE.exists():
 		raise FileNotFoundError(f"No s'ha trobat el fitxer: {GROUNDTRUTH_CANONICAL_TABLE}")
 
-	combined = json.loads(LONG_DESCRIPTIONS_COMBINED.read_text(encoding="utf-8"))
-	chartsold = json.loads(GROUNDTRUTH_CANONICAL_TABLE.read_text(encoding="utf-8"))
+	combined = json.loads(LONG_DESCRIPTIONS_COMBINED.read_text(encoding="utf-8-sig"))
+	chartsold = json.loads(GROUNDTRUTH_CANONICAL_TABLE.read_text(encoding="utf-8-sig"))
 
 	titles_by_id: Dict[str, str] = {}
 	for entry in chartsold:
@@ -1137,8 +1093,6 @@ def write_json_factual_check(verified_claims: List[Dict[str, Any]]) -> None:
 	payload = {
 		"groundtruth": {
 			"canonical_table": str(GROUNDTRUTH_CANONICAL_TABLE),
-			"statistics_dir": str(GROUNDTRUTH_STATS_DIR),
-			"statistics_glob": GROUNDTRUTH_STATS_GLOB,
 		},
 		"claims": verified_claims,
 	}
